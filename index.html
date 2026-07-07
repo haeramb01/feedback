@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>방과후 컴퓨터 교실 피드백 시스템</title>
-    <!-- 부트스트랩 5 CDN (깔끔한 디자인용) -->
+    <title>방과후 컴퓨터 교실 피드백 시스템 (스마트 Y/N 판별 버전)</title>
+    <!-- 부트스트랩 5 CDN (깔끔하고 트렌디한 디자인용) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', sans-serif; }
+        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; }
         .main-container { max-width: 1200px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .header-title { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 30px; }
         .config-box { background-color: #eff6ff; padding: 20px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 25px; }
-        .table th { background-color: #f1f5f9; color: #334155; text-align: center; }
+        .table th { background-color: #f1f5f9; color: #334155; text-align: center; font-size: 0.95rem; }
         .table td { vertical-align: middle; }
-        .radio-group { display: flex; gap: 15px; justify-content: center; }
+        .radio-group { display: flex; gap: 12px; justify-content: center; }
         .btn-primary { background-color: #1e3a8a; border: none; }
         .btn-primary:hover { background-color: #1d4ed8; }
-        .instruction-box { background-color: #fef08a; border: 1px solid #fde047; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; }
+        .instruction-box { background-color: #fef08a; border: 1px solid #fde047; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; color: #856404; }
     </style>
 </head>
 <body>
@@ -26,72 +26,72 @@
     
     <!-- 사용자 안내창 -->
     <div class="instruction-box">
-        <strong>💡 [비개발자 안내용] 필수 수정 사항:</strong><br>
-        이 HTML 파일을 마우스 우클릭 -> [연결 프로그램] -> [메모장]으로 열어서 
-        <strong>약 45번째 줄</strong>에 있는 <code>const WEB_APP_URL = "여기에_주소를_넣으세요";</code> 부분에 
-        본인의 구글 앱스 스크립트 웹앱 URL을 붙여넣으셔야 구글 시트와 연동됩니다!
+        <strong>💡 [비개발자 필수 세팅 안내]:</strong><br>
+        이 <code>index.html</code> 파일을 마우스 우클릭하여 <strong>[연결 프로그램] -> [메모장]</strong>으로 엽니다.<br>
+        그리고 스크롤을 조금만 내려서 <strong>약 49번째 줄</strong>에 있는 <code>const WEB_APP_URL = "여기에_구글_주소를_넣으세요";</code> 칸에 
+        구글 앱스 스크립트에서 발급받은 실제 URL 주소를 붙여넣고 저장하셔야 정상 작동합니다!
     </div>
 
-    <!-- 1 구역: 상단 공통 설정 -->
+    <!-- 1 구역: 상단 공통 설정 (반이름, 교재선택) -->
     <div class="config-box row g-3">
         <div class="col-md-6">
-            <label class="form-label fw-bold">1. 수업반 이름 입력</label>
+            <label class="form-label fw-bold text-dark">1. 수업반 이름 입력</label>
             <input type="text" id="className" class="form-control" placeholder="예: 대박초등학교 컴퓨터A반">
         </div>
         <div class="col-md-6">
-            <label class="form-label fw-bold">2. 교재 선택</label>
+            <label class="form-label fw-bold text-dark">2. 교재 선택</label>
             <select id="textbookSelect" class="form-select" onchange="loadEvaluationFields()">
-                <option value="">-- 먼저 구글 시트 연동이 필요합니다 --</option>
-                <!-- 구글 시트에서 가져온 교재 목록이 여기에 동적으로 들어옵니다 -->
+                <option value="">-- 먼저 구글 주소 연동이 필요합니다 --</option>
+                <!-- 구글 시트에서 불러온 Y 상태의 교재 목록이 여기에 들어옵니다 -->
             </select>
         </div>
     </div>
 
-    <!-- 2 구역: 다수 학생 입력 테이블 -->
+    <!-- 2 구역: 다수 학생 입력 그리드 테이블 -->
     <div class="mb-4">
-        <h4 class="fw-bold text-secondary mb-3">3. 학생별 평가 입력</h4>
+        <h4 class="fw-bold text-secondary mb-3">3. 학생별 평가 일괄 입력</h4>
         <div class="table-responsive">
             <table class="table table-bordered align-middle" id="studentTable">
                 <thead>
                     <tr id="tableHeader">
                         <th style="width: 15%;">학생 이름</th>
-                        <!-- 평가 항목들이 교재 선택시 동적으로 여기에 추가됩니다 -->
-                        <th style="width: 25%;">강사 커스텀 한줄 의견</th>
+                        <!-- 교재를 선택하면 구글 시트의 평가 항목들이 열(Column)로 자동 추가됩니다 -->
+                        <th style="width: 25%;">강사 커스텀 한줄 의견 (선택)</th>
                         <th style="width: 8%;">관리</th>
                     </tr>
                 </thead>
                 <tbody id="studentGrid">
-                    <!-- 학생 행들이 동적으로 추가됩니다 -->
+                    <!-- [+ 학생 추가하기] 버튼을 누르면 행들이 여기에 추가됩니다 -->
                 </tbody>
             </table>
         </div>
-        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addStudentRow()">+ 학생 추가하기</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="addStudentRow()">+ 학생 추가하기</button>
     </div>
 
-    <!-- 3 구역: 출력 버튼 -->
-    <div class="text-center mt-4">
-        <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold" onclick="generateAndZip()">
+    <!-- 3 구역: 최종 출력 및 다운로드 버튼 -->
+    <div class="text-center mt-5">
+        <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip()">
             📦 모든 학생 리포트 일괄 다운로드 (ZIP)
         </button>
     </div>
 </div>
 
-<!-- 필수 외부 자바스크립트 라이브러리 (CDN) -->
+<!-- 기능 구현을 위한 필수 외부 자바스크립트 라이브러리 (안전한 공식 최신 CDN 링크) -->
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-    // ⚠️ [중요] 구글 앱스 스크립트 배포 후 발급받은 웹 앱 URL을 여기에 붙여넣으세요!
+    // ⚠️ [중요] 구글 앱스 스크립트 새 배포 후 발급받은 웹 앱 URL 주소를 아래 따옴표 안에 붙여넣으세요!
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNzBnj0faJtuKJUT-HLIm-TY_3JP-Jk09uv9NOMEHF0AxhQyIh-mIPIrhsi78SPGe8/exec";
     
-    let currentEvaluationItems = []; // 현재 선택된 교재의 평가 항목들 저장
-    let evaluationPoolData = {}; // 항목별 상중하 문구 저장용
+    let currentEvaluationItems = []; // 선택한 교재의 평가 항목 리스트 저장소
+    let evaluationPoolData = {}; // 항목별 상/중/하 문구 저장 풀
 
-    // 페이지 열리자마자 구글 시트로부터 교재 목록 로드
+    // 웹페이지가 열리자마자 백엔드 구글 시트에서 교재 목록을 가져오는 함수
     window.onload = function() {
-        if(WEB_APP_URL.includes("여기에")) {
-            return; // URL 세팅 안 되었으면 중단
+        if(WEB_APP_URL.includes("여기에_구글")) {
+            return; // URL이 기본 상태면 작동 안 함
         }
         
         fetch(`${WEB_APP_URL}?action=get_books`)
@@ -99,19 +99,23 @@
         .then(data => {
             const select = document.getElementById("textbookSelect");
             select.innerHTML = '<option value="">-- 교재를 선택하세요 --</option>';
-            // 데이터의 첫 행(헤더) 제외하고 루프
-            for(let i=1; i<data.length; i++) {
-                if(data[i][2] === "Y") { // 노출 여부가 Y인 것만
+            
+            // 첫 번째 행(제목행)을 제외하고 데이터 분석
+            for(let i = 1; i < data.length; i++) {
+                // 💡 글자 양옆 공백을 지우고 무조건 대문자로 변환하여 Y/N 상태를 판별합니다.
+                let useStatus = String(data[i][2]).trim().toUpperCase();
+                
+                if(useStatus === "Y") { 
                     let option = document.createElement("option");
-                    option.value = data[i][0]; // 교재코드
-                    option.text = data[i][1];  // 긴 교재명
+                    option.value = data[i][0]; // A열: 교재코드
+                    option.text = data[i][1];  // B열: 긴 교재명
                     select.appendChild(option);
                 }
             }
-        }).catch(err => alert("구글 시트 로드 실패: URL을 확인하거나 권한 승인을 확인하세요."));
+        }).catch(err => alert("구글 시트 로드 실패: URL 주소나 구글 권한 승인 상태를 확인하세요."));
     };
 
-    // 교재 선택 시 평가 항목 열(Column) 동적 생성
+    // 강사가 교재를 선택했을 때, 매칭되는 평가 항목들을 테이블 가로 헤더에 쫙 깔아주는 함수
     function loadEvaluationFields() {
         const bookId = document.getElementById("textbookSelect").value;
         if(!bookId) return;
@@ -119,14 +123,13 @@
         fetch(`${WEB_APP_URL}?action=get_evals&book_id=${bookId}`)
         .then(res => res.json())
         .then(data => {
-            // 데이터 분석 및 항목 뽑기
             currentEvaluationItems = [];
             evaluationPoolData = {};
 
             data.forEach(row => {
-                const item = row[1]; // 평가항목
-                const level = row[2]; // 등급 (상/중/하)
-                const text = row[3]; // 문구
+                const item = row[1];  // B열: 평가항목
+                const level = row[2]; // C열: 등급 (상/중/하)
+                const text = row[3];  // D열: 피드백 문구
                 
                 if(!currentEvaluationItems.includes(item)) {
                     currentEvaluationItems.push(item);
@@ -135,7 +138,7 @@
                 evaluationPoolData[item][level] = text;
             });
 
-            // 테이블 헤더 업데이트
+            // 테이블 상단 헤더 글자들 동적 변경
             const header = document.getElementById("tableHeader");
             header.innerHTML = '<th style="width: 15%;">학생 이름</th>';
             currentEvaluationItems.forEach(item => {
@@ -143,22 +146,22 @@
                 th.innerText = item;
                 header.appendChild(th);
             });
-            header.innerHTML += '<th style="width: 25%;">강사 커스텀 한줄 의견</th><th style="width: 8%;">관리</th>';
+            header.innerHTML += '<th style="width: 25%;">강사 커스텀 한줄 의견 (선택)</th><th style="width: 8%;">관리</th>';
 
-            // 기존 그리드 초기화 후 첫 학생 행 추가
+            // 입력 공간 초기화 후 첫 번째 학생 입력 칸 자동 생성
             document.getElementById("studentGrid").innerHTML = "";
             addStudentRow();
         });
     }
 
-    // 학생 입력 행 추가 함수
+    // 학생 줄(Row)을 추가해 주는 함수
     let rowCounter = 0;
     function addStudentRow() {
         const tbody = document.getElementById("studentGrid");
         const textbook = document.getElementById("textbookSelect").value;
         
         if(!textbook) {
-            alert("먼저 교재를 선택해 주세요!");
+            alert("먼저 위에서 교재를 선택해 주세요!");
             return;
         }
 
@@ -167,11 +170,11 @@
         tr.className = "student-row";
         tr.id = `row_${rowCounter}`;
 
-        // 이름 칸
-        let tdName = `<td><input type="text" class="form-control student-name" placeholder="이름"></td>`;
+        // 학생 이름 입력 칸
+        let tdName = `<td><input type="text" class="form-control student-name" placeholder="이름 입력"></td>`;
         tr.innerHTML += tdName;
 
-        // 동적 평가 항목 라디오 버튼 칸 생성
+        // 평가 항목 개수만큼 상/중/하 라디오 버튼 생성
         currentEvaluationItems.forEach((item, index) => {
             let tdRadio = `<td>
                 <div class="radio-group">
@@ -183,34 +186,34 @@
             tr.innerHTML += tdRadio;
         });
 
-        // 커스텀 메모 및 삭제 버튼
-        let tdTail = `<td><input type="text" class="form-control custom-memo" placeholder="특이사항 직접 입력"></td>
+        // 강사 커스텀 메모 및 행 삭제 버튼
+        let tdTail = `<td><input type="text" class="form-control custom-memo" placeholder="예: 타자 실력이 눈에 띄게 늘었음"></td>
         <td class="text-center"><button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${rowCounter}').remove()">삭제</button></td>`;
         tr.innerHTML += tdTail;
 
         tbody.appendChild(tr);
     }
 
-    // 대망의 ZIP 일괄 생성 기능
+    // [ZIP 일괄 다운로드] 버튼을 누르면 작동하는 핵심 엔진 함수
     async function generateAndZip() {
         const className = document.getElementById("className").value;
         const textbookSelect = document.getElementById("textbookSelect");
         const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
         
-        if(!className) { alert("수업반 이름을 입력해 주세요!"); return; }
+        if(!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
         
         const rows = document.querySelectorAll(".student-row");
-        if(rows.length === 0) { alert("출력할 학생이 없습니다."); return; }
+        if(rows.length === 0) { alert("출력할 학생 데이터가 없습니다. [+ 학생 추가하기]를 이용하세요."); return; }
 
         const zip = new JSZip();
 
-        // 모든 학생 행을 돌며 워드 파일 만들기
+        // 등록된 학생 수만큼 돌면서 각각 워드 파일 빌드
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            const studentName = row.querySelector(".student-name").value;
-            if(!studentName) continue; // 이름 비었으면 건너뜀
+            const studentName = row.querySelector(".student-name").value.trim();
+            if(!studentName) continue; // 이름 칸이 비어있으면 해당 줄은 패스
 
-            // 체크된 상중하 문구 결합
+            // 상/중/하 체크된 결과 문구 순서대로 조합
             let combinedFeedback = "";
             currentEvaluationItems.forEach((item, idx) => {
                 const checkedLevel = row.querySelector(`input[name="item_${row.id.split('_')[1]}_${idx}"]:checked`).value;
@@ -218,35 +221,38 @@
                 combinedFeedback += text + " ";
             });
 
-            const customMemo = row.querySelector(".custom-memo").value;
+            const customMemo = row.querySelector(".custom-memo").value.trim();
 
-            // docx.js 라이브러리 규격에 맞춰 문서 생성
+            // docx.js 공식 서식 양식에 맞춰 문서 내부 텍스트 구성
             const doc = new docx.Document({
                 sections: [{
                     children: [
                         new docx.Paragraph({ text: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문", heading: docx.HeadingLevel.HEADING_1, alignment: docx.AlignmentType.CENTER }),
                         new docx.Paragraph({ text: "" }),
-                        new docx.Paragraph({ text: `■ 수업반 정보 : ${className}` }),
-                        new docx.Paragraph({ text: `■ 학생 성명 : ${studentName} 학생 귀하` }),
-                        new docx.Paragraph({ text: `■ 학습 과정 : ${textbookName}` }),
+                        new docx.Paragraph({ text: `▶ 수업반 정보 : ${className}` }),
+                        new docx.Paragraph({ text: `▶ 학생 성명 : ${studentName} 학생 귀하` }),
+                        new docx.Paragraph({ text: `▶ 학습 과정 : ${textbookName}` }),
                         new docx.Paragraph({ text: "" }),
                         new docx.Paragraph({ text: "[종합 교육 성취도 피드백]", heading: docx.HeadingLevel.HEADING_2 }),
                         new docx.Paragraph({ text: combinedFeedback }),
                         new docx.Paragraph({ text: "" }),
-                        new docx.Paragraph({ text: customMemo ? `[강사 특이사항 의견]
-${customMemo}` : "" }),
+                        // 강사 추가 한줄 의견이 있을 때만 워드에 줄 바꿈하여 추가
+                        new docx.Paragraph({ text: customMemo ? `[지도강사 개별 의견]
+- ${customMemo}` : "" }),
                         new docx.Paragraph({ text: "" }),
-                        new docx.Paragraph({ text: "정보 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", alignment: docx.AlignmentType.CENTER }),
-                        new docx.Paragraph({ text: "방과후 컴퓨터실 지도강사 드림", alignment: docx.AlignmentType.CENTER })
+                        new docx.Paragraph({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", alignment: docx.AlignmentType.CENTER }),
+                        new docx.Paragraph({ text: "" }),
+                        new docx.Paragraph({ text: "방과후 컴퓨터 교실 지도강사 드림", alignment: docx.AlignmentType.CENTER })
                     ]
                 }]
             });
 
+            // 워드 파일 데이터 생성 및 파일명 지정 후 ZIP 주머니에 집어넣기
             const blob = await docx.Packer.toBlob(doc);
             zip.file(`${studentName}_학습통지서.docx`, blob);
         }
 
-        // 압축 후 다운로드
+        // 주머니에 모인 워드 파일들을 하나의 ZIP 파일로 축소 압축하여 내 컴퓨터로 다운로드 트리거
         zip.generateAsync({type:"blob"}).then(function(content) {
             saveAs(content, `${className}_학습통지서_일괄출력.zip`);
         });
