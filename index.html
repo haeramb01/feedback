@@ -3,254 +3,607 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>방과후 컴퓨터 교실 피드백 시스템 (URL 연동 완료)</title>
-    <!-- 부트스트랩 5 CDN -->
+    <title>방과후 컴퓨터 교실 피드백 시스템</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; }
-        .main-container { max-width: 1200px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header-title { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 30px; }
+        .main-container { max-width: 1300px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .header-title { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px; }
         .config-box { background-color: #eff6ff; padding: 20px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 25px; }
-        .table th { background-color: #f1f5f9; color: #334155; text-align: center; font-size: 0.95rem; }
+        .table th { background-color: #f1f5f9; color: #334155; text-align: center; font-size: 0.9rem; }
         .table td { vertical-align: middle; }
-        .radio-group { display: flex; gap: 12px; justify-content: center; }
+        .radio-group { display: flex; gap: 10px; justify-content: center; }
+        .radio-group.unselected { outline: 2px solid #dc3545; outline-offset: 4px; border-radius: 6px; }
         .btn-primary { background-color: #1e3a8a; border: none; }
         .btn-primary:hover { background-color: #1d4ed8; }
         .success-box { background-color: #d1e7dd; border: 1px solid #badbcc; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; color: #0f5132; }
+        .preview-box {
+            background-color: #eff6ff; border: 1px solid #93c5fd; border-radius: 6px;
+            padding: 8px 10px; font-size: 0.82rem; color: #1e3a8a;
+            min-height: 60px; white-space: pre-wrap; line-height: 1.4;
+        }
+        .preview-box.empty { color: #94a3b8; font-style: italic; }
+        .class-preview-box {
+            background-color: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px;
+            padding: 16px; font-size: 0.95rem; color: #1e3a8a; min-height: 90px;
+            white-space: pre-wrap; line-height: 1.6; margin-bottom: 20px;
+        }
+        .lesson-check-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+            border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 6px; background: #fff;
+        }
+        .lesson-check-item label { margin: 0; cursor: pointer; }
+        .lesson-check-item .lesson-name { font-weight: bold; color: #334155; min-width: 160px; }
+        .lesson-check-item .lesson-goal { color: #64748b; font-size: 0.82rem; }
+        #lessonListBox { max-height: 320px; overflow-y: auto; padding: 4px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .nav-tabs .nav-link.active { font-weight: bold; color: #1e3a8a; }
     </style>
 </head>
 <body>
 
 <div class="container main-container">
-    <h2 class="header-title">🚀 방과후 컴퓨터 교실 학습 통지서 일괄 생성기</h2>
-    
+    <h2 class="header-title">🚀 방과후 컴퓨터 교실 피드백 시스템</h2>
+
     <div class="success-box">
         <strong>✅ 구글 시트 주소 연동 완료 버전:</strong><br>
         보내주신 구글 웹앱 주소가 내부에 안전하게 삽입되었습니다. 이제 별도의 코드 수정 없이 이 파일 그대로 사용하시면 됩니다!
     </div>
 
-    <!-- 1 구역: 상단 공통 설정 -->
-    <div class="config-box row g-3">
-        <div class="col-md-6">
-            <label class="form-label fw-bold text-dark">1. 수업반 이름 입력</label>
-            <input type="text" id="className" class="form-control" placeholder="예: 대박초등학교 컴퓨터A반">
+    <ul class="nav nav-tabs" id="mainTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab1-btn" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">📋 월말/분기 평가</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab2-btn" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">📢 월간 교육현황 공유</button>
+        </li>
+    </ul>
+
+    <div class="tab-content pt-4">
+
+    <!-- ========================= 탭 1: 월말/분기 평가 ========================= -->
+    <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+
+        <div class="config-box row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark">1. 수업반 이름 입력</label>
+                <input type="text" id="className1" class="form-control" placeholder="예: 대박초등학교 컴퓨터A반">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark">2. 교재 선택</label>
+                <select id="textbookSelect1" class="form-select" onchange="onTextbookChange1()">
+                    <option value="">-- 교재를 로딩 중입니다... --</option>
+                </select>
+            </div>
         </div>
-        <div class="col-md-6">
-            <label class="form-label fw-bold text-dark">2. 교재 선택</label>
-            <select id="textbookSelect" class="form-select" onchange="loadEvaluationFields()">
-                <option value="">-- 교재를 로딩 중입니다... --</option>
-            </select>
+
+        <div class="mb-4">
+            <h4 class="fw-bold text-secondary mb-3">3. 학생별 평가 일괄 입력</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle" id="studentTable1">
+                    <thead>
+                        <tr id="tableHeader1">
+                            <th style="width: 12%;">학생 이름</th>
+                            <th style="width: 20%;">강사 커스텀 한줄 의견 (선택)</th>
+                            <th style="width: 22%;">📄 미리보기 (다운로드 전 확인)</th>
+                            <th style="width: 6%;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentGrid1"></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="addStudentRow1()">+ 학생 추가하기</button>
+        </div>
+
+        <div class="text-center mt-5">
+            <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip1()">
+                📦 모든 학생 리포트 일괄 다운로드 (ZIP)
+            </button>
         </div>
     </div>
 
-    <!-- 2 구역: 학생 입력 테이블 -->
-    <div class="mb-4">
-        <h4 class="fw-bold text-secondary mb-3">3. 학생별 평가 일괄 입력</h4>
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle" id="studentTable">
-                <thead>
-                    <tr id="tableHeader">
-                        <th style="width: 15%;">학생 이름</th>
-                        <th style="width: 25%;">강사 커스텀 한줄 의견 (선택)</th>
-                        <th style="width: 8%;">관리</th>
-                    </tr>
-                </thead>
-                <tbody id="studentGrid">
-                </tbody>
-            </table>
+    <!-- ========================= 탭 2: 월간 교육현황 공유 ========================= -->
+    <div class="tab-pane fade" id="tab2" role="tabpanel">
+
+        <div class="config-box row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark">1. 수업반 이름 입력</label>
+                <input type="text" id="className2" class="form-control" placeholder="예: 대박초등학교 컴퓨터A반">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark">2. 교재 선택</label>
+                <select id="textbookSelect2" class="form-select" onchange="onTextbookChange2()">
+                    <option value="">-- 교재를 로딩 중입니다... --</option>
+                </select>
+            </div>
         </div>
-        <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="addStudentRow()">+ 학생 추가하기</button>
+
+        <div class="mb-4">
+            <h4 class="fw-bold text-secondary mb-2">3. 이번 달 진행한 차시 선택</h4>
+            <div class="mb-2">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleAllLessons(true)">전체 선택</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleAllLessons(false)">전체 해제</button>
+            </div>
+            <div id="lessonListBox">
+                <p class="text-muted small mb-0">먼저 교재를 선택해 주세요.</p>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="fw-bold text-secondary mb-2">4. 반 공통 학습내용 미리보기</h4>
+            <div class="class-preview-box empty" id="classPreviewBox">차시를 선택하면 여기에 반 전체 공통 문장이 표시됩니다.</div>
+        </div>
+
+        <div class="mb-4">
+            <h4 class="fw-bold text-secondary mb-3">5. 학생 명단 및 개별 한줄 메모</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">학생 이름</th>
+                            <th style="width: 30%;">강사 개별 의견 (선택)</th>
+                            <th style="width: 45%;">📄 미리보기</th>
+                            <th style="width: 8%;">관리</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentGrid2"></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="addStudentRow2()">+ 학생 추가하기</button>
+        </div>
+
+        <div class="text-center mt-5">
+            <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip2()">
+                📦 월간 교육현황 안내문 일괄 다운로드 (ZIP)
+            </button>
+        </div>
     </div>
 
-    <!-- 3 구역: 출력 버튼 -->
-    <div class="text-center mt-5">
-        <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip()">
-            📦 모든 학생 리포트 일괄 다운로드 (ZIP)
-        </button>
-    </div>
+    </div><!-- /tab-content -->
 </div>
 
-<!-- 필수 라이브러리 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-    // 🔗 보내주신 정식 구글 웹 앱 URL 주소가 자동으로 조립되었습니다.
+    // 🔗 구글 웹 앱 URL
+    // ⚠️ 탭2 기능을 쓰려면 백엔드 Apps Script에 "get_lessons" 액션이 추가되어야 합니다. (하단 안내 참고)
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNzBnj0faJtuKJUT-HLIm-TY_3JP-Jk09uv9NOMEHF0AxhQyIh-mIPIrhsi78SPGe8/exec";
-    
-    let currentEvaluationItems = []; 
-    let evaluationPoolData = {}; 
 
-    // 페이지가 열리자마자 자동으로 구글 시트에서 Y 상태인 교재 목록을 가져옵니다.
+    // 페이지 로드 시 두 탭의 교재 드롭다운을 함께 채웁니다.
     window.onload = function() {
         fetch(`${WEB_APP_URL}?action=get_books`)
         .then(res => res.json())
         .then(data => {
-            const select = document.getElementById("textbookSelect");
-            select.innerHTML = '<option value="">-- 교재를 선택하세요 --</option>';
-            
-            for(let i = 1; i < data.length; i++) {
-                let useStatus = String(data[i][2]).trim().toUpperCase();
-                if(useStatus === "Y") { 
-                    let option = document.createElement("option");
-                    option.value = data[i][0]; 
-                    option.text = data[i][1];  
-                    select.appendChild(option);
+            [document.getElementById("textbookSelect1"), document.getElementById("textbookSelect2")].forEach(select => {
+                select.innerHTML = '<option value="">-- 교재를 선택하세요 --</option>';
+                for (let i = 1; i < data.length; i++) {
+                    let useStatus = String(data[i][2]).trim().toUpperCase();
+                    if (useStatus === "Y") {
+                        let option = document.createElement("option");
+                        option.value = data[i][0];
+                        option.text = data[i][1];
+                        select.appendChild(option);
+                    }
                 }
-            }
-        }).catch(err => alert("구글 시트 로드 실패: 구글 앱스 스크립트의 새 배포 승인 및 '모든 사람' 권한 설정을 다시 확인하세요."));
+            });
+        }).catch(err => alert("구글 시트 로드 실패: 앱스 스크립트의 새 배포 승인 및 '모든 사람' 권한 설정을 다시 확인하세요."));
     };
 
-    // 교재를 선택하면 항목을 동적으로 깔아줍니다.
-    function loadEvaluationFields() {
-        const bookId = document.getElementById("textbookSelect").value;
-        if(!bookId) return;
+    /* =================================================================
+       탭 1: 월말/분기 평가 (기존 로직 + 버그 수정본 그대로 유지)
+    ================================================================= */
+    let currentEvaluationItems1 = [];
+    let evaluationPoolData1 = {};
+    let lastSelectedTextbook1 = "";
+    let rowCounter1 = 0;
+
+    function onTextbookChange1() {
+        const select = document.getElementById("textbookSelect1");
+        const hasRows = document.querySelectorAll("#studentGrid1 .student-row").length > 0;
+        if (hasRows) {
+            const ok = confirm("⚠️ 교재를 변경하면 현재 입력된 학생 데이터가 모두 삭제됩니다.\n정말 변경하시겠습니까?");
+            if (!ok) { select.value = lastSelectedTextbook1; return; }
+        }
+        lastSelectedTextbook1 = select.value;
+        loadEvaluationFields1();
+    }
+
+    function loadEvaluationFields1() {
+        const bookId = document.getElementById("textbookSelect1").value;
+        if (!bookId) return;
 
         fetch(`${WEB_APP_URL}?action=get_evals&book_id=${bookId}`)
         .then(res => res.json())
         .then(data => {
-            currentEvaluationItems = [];
-            evaluationPoolData = {};
-
+            currentEvaluationItems1 = [];
+            evaluationPoolData1 = {};
             data.forEach(row => {
-                const item = row[1];  
-                const level = row[2]; 
-                const text = row[3];  
-                
-                if(!currentEvaluationItems.includes(item)) {
-                    currentEvaluationItems.push(item);
-                }
-                if(!evaluationPoolData[item]) evaluationPoolData[item] = {};
-                evaluationPoolData[item][level] = text;
+                const item = row[1], level = row[2], text = row[3];
+                if (!currentEvaluationItems1.includes(item)) currentEvaluationItems1.push(item);
+                if (!evaluationPoolData1[item]) evaluationPoolData1[item] = {};
+                evaluationPoolData1[item][level] = text;
             });
 
-            const header = document.getElementById("tableHeader");
-            header.innerHTML = '<th style="width: 15%;">학생 이름</th>';
-            currentEvaluationItems.forEach(item => {
+            const header = document.getElementById("tableHeader1");
+            header.innerHTML = '<th style="width: 12%;">학생 이름</th>';
+            currentEvaluationItems1.forEach(item => {
                 let th = document.createElement("th");
                 th.innerText = item;
                 header.appendChild(th);
             });
-            header.innerHTML += '<th style="width: 25%;">강사 커스텀 한줄 의견 (선택)</th><th style="width: 8%;">관리</th>';
+            header.innerHTML += '<th style="width: 20%;">강사 커스텀 한줄 의견 (선택)</th><th style="width: 22%;">📄 미리보기 (다운로드 전 확인)</th><th style="width: 6%;">관리</th>';
 
-            document.getElementById("studentGrid").innerHTML = "";
-            addStudentRow();
+            document.getElementById("studentGrid1").innerHTML = "";
+            addStudentRow1();
+        })
+        .catch(err => {
+            alert("평가 항목 로딩 실패: 네트워크 상태를 확인하고 교재를 다시 선택해 주세요.");
+            document.getElementById("textbookSelect1").value = "";
         });
     }
 
-    let rowCounter = 0;
-    function addStudentRow() {
-        const tbody = document.getElementById("studentGrid");
-        const textbook = document.getElementById("textbookSelect").value;
-        
-        if(!textbook) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
+    function addStudentRow1() {
+        const tbody = document.getElementById("studentGrid1");
+        const textbook = document.getElementById("textbookSelect1").value;
+        if (!textbook) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
 
-        rowCounter++;
+        rowCounter1++;
         let tr = document.createElement("tr");
         tr.className = "student-row";
-        tr.id = `row_${rowCounter}`;
+        tr.id = `row1_${rowCounter1}`;
 
-        let tdName = `<td><input type="text" class="form-control student-name" placeholder="이름 입력"></td>`;
-        tr.innerHTML += tdName;
+        tr.innerHTML += `<td><input type="text" class="form-control student-name" placeholder="이름 입력" oninput="updatePreview1(${rowCounter1})"></td>`;
 
-        currentEvaluationItems.forEach((item, index) => {
-            let tdRadio = `<td>
-                <div class="radio-group">
-                    <label><input type="radio" name="item_${rowCounter}_${index}" value="상" checked> 상</label>
-                    <label><input type="radio" name="item_${rowCounter}_${index}" value="중"> 중</label>
-                    <label><input type="radio" name="item_${rowCounter}_${index}" value="하"> 하</label>
+        currentEvaluationItems1.forEach((item, index) => {
+            tr.innerHTML += `<td>
+                <div class="radio-group" id="radiogroup1_${rowCounter1}_${index}">
+                    <label><input type="radio" name="item1_${rowCounter1}_${index}" value="상" onclick="updatePreview1(${rowCounter1})"> 상</label>
+                    <label><input type="radio" name="item1_${rowCounter1}_${index}" value="중" onclick="updatePreview1(${rowCounter1})"> 중</label>
+                    <label><input type="radio" name="item1_${rowCounter1}_${index}" value="하" onclick="updatePreview1(${rowCounter1})"> 하</label>
                 </div>
             </td>`;
-            tr.innerHTML += tdRadio;
         });
 
-        let tdTail = `<td><input type="text" class="form-control custom-memo" placeholder="예: 집중력이 좋음"></td>
-        <td class="text-center"><button class="btn btn-danger btn-sm" onclick="document.getElementById('row_${rowCounter}').remove()">삭제</button></td>`;
-        tr.innerHTML += tdTail;
+        tr.innerHTML += `<td><input type="text" class="form-control custom-memo" placeholder="예: 집중력이 좋음" oninput="updatePreview1(${rowCounter1})"></td>
+        <td><div class="preview-box empty" id="preview1_${rowCounter1}">평가를 선택하면 여기에 문장이 표시됩니다.</div></td>
+        <td class="text-center"><button class="btn btn-danger btn-sm" onclick="document.getElementById('row1_${rowCounter1}').remove()">삭제</button></td>`;
 
         tbody.appendChild(tr);
     }
 
-    // ZIP 압축 파일 빌드 엔진
-    async function generateAndZip() {
-        const className = document.getElementById("className").value.trim();
-        const textbookSelect = document.getElementById("textbookSelect");
-        
-        if(!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
+    function updatePreview1(rowNum) {
+        const row = document.getElementById(`row1_${rowNum}`);
+        if (!row) return;
+        const previewBox = document.getElementById(`preview1_${rowNum}`);
+        const studentName = row.querySelector(".student-name").value.trim() || "(이름 미입력)";
+
+        let combinedFeedback = "";
+        let hasUnselected = false;
+
+        currentEvaluationItems1.forEach((item, idx) => {
+            const rName = `item1_${rowNum}_${idx}`;
+            const checkedRadio = row.querySelector(`input[name="${rName}"]:checked`);
+            const groupBox = document.getElementById(`radiogroup1_${rowNum}_${idx}`);
+            if (!checkedRadio) {
+                hasUnselected = true;
+                if (groupBox) groupBox.classList.add("unselected");
+                combinedFeedback += `[${item}: 미선택] `;
+            } else {
+                if (groupBox) groupBox.classList.remove("unselected");
+                const text = (evaluationPoolData1[item] && evaluationPoolData1[item][checkedRadio.value]) ? evaluationPoolData1[item][checkedRadio.value] : "";
+                combinedFeedback += text + " ";
+            }
+        });
+
+        const customMemo = row.querySelector(".custom-memo").value.trim();
+        if (customMemo) combinedFeedback += `\n[개별 의견] ${customMemo}`;
+
+        previewBox.textContent = `▶ ${studentName}\n` + combinedFeedback.trim();
+        previewBox.classList.remove("empty");
+        previewBox.style.borderColor = hasUnselected ? "#dc3545" : "#93c5fd";
+    }
+
+    async function generateAndZip1() {
+        const className = document.getElementById("className1").value.trim();
+        const textbookSelect = document.getElementById("textbookSelect1");
+        if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
         const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
-        
-        if(!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
-        
-        const rows = document.querySelectorAll(".student-row");
-        if(rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
+        if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
+
+        const rows = document.querySelectorAll("#studentGrid1 .student-row");
+        if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
+
+        let unselectedStudents = [];
+        rows.forEach(row => {
+            const studentName = row.querySelector(".student-name").value.trim();
+            if (!studentName) return;
+            currentEvaluationItems1.forEach((item, idx) => {
+                const checkedRadio = row.querySelector(`input[name="item1_${row.id.split('_')[1]}_${idx}"]:checked`);
+                if (!checkedRadio && !unselectedStudents.includes(studentName)) unselectedStudents.push(studentName);
+            });
+        });
+        if (unselectedStudents.length > 0) {
+            alert("다음 학생의 평가 항목 중 선택되지 않은 항목이 있습니다:\n" + unselectedStudents.join(", ") + "\n빨간 테두리 항목을 모두 선택한 뒤 다시 시도해 주세요.");
+            return;
+        }
 
         const zip = new JSZip();
         let hasValidFile = false;
+        const usedFileNames = {};
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
             const studentName = row.querySelector(".student-name").value.trim();
-            if(!studentName) continue; 
-
+            if (!studentName) continue;
             hasValidFile = true;
 
             let combinedFeedback = "";
-            currentEvaluationItems.forEach((item, idx) => {
-                const rName = `item_${row.id.split('_')[1]}_${idx}`;
+            currentEvaluationItems1.forEach((item, idx) => {
+                const rName = `item1_${row.id.split('_')[1]}_${idx}`;
                 const checkedRadio = row.querySelector(`input[name="${rName}"]:checked`);
                 const checkedLevel = checkedRadio ? checkedRadio.value : "상";
-                const text = (evaluationPoolData[item] && evaluationPoolData[item][checkedLevel]) ? evaluationPoolData[item][checkedLevel] : "";
+                const text = (evaluationPoolData1[item] && evaluationPoolData1[item][checkedLevel]) ? evaluationPoolData1[item][checkedLevel] : "";
                 combinedFeedback += text + " ";
             });
-
             const customMemo = row.querySelector(".custom-memo").value.trim();
 
-            const doc = new docx.Document({
-                sections: [{
-                    children: [
-                        new docx.Paragraph({
-                            alignment: docx.AlignmentType.CENTER,
-                            heading: docx.HeadingLevel.HEADING_1,
-                            children: [new docx.TextRun({ text: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문", bold: true, size: 32 })]
-                        }),
-                        new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                        new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 수업반 정보 : ${className}`, size: 24 })] }),
-                        new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학생 성명 : ${studentName} 학생 귀하`, size: 24 })] }),
-                        new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학습 과정 : ${textbookName}`, size: 24 })] }),
-                        new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                        new docx.Paragraph({
-                            heading: docx.HeadingLevel.HEADING_2,
-                            children: [new docx.TextRun({ text: "[종합 교육 성취도 피드백]", bold: true, size: 26 })]
-                        }),
-                        new docx.Paragraph({ children: [new docx.TextRun({ text: combinedFeedback, size: 22 })] }),
-                        new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                        new docx.Paragraph({ children: [new docx.TextRun({ text: customMemo ? `[지도강사 개별 의견]
-- ${customMemo}` : "", size: 22 })] }),
-                        new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                        new docx.Paragraph({
-                            alignment: docx.AlignmentType.CENTER,
-                            children: [new docx.TextRun({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", size: 20 })]
-                        }),
-                        new docx.Paragraph({
-                            alignment: docx.AlignmentType.CENTER,
-                            children: [new docx.TextRun({ text: "방과후 컴퓨터 교실 지도강사 드림", size: 20, bold: true })]
-                        })
-                    ]
-                }]
+            const doc = buildFeedbackDoc({
+                title: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문",
+                className, studentName, textbookName,
+                sectionTitle: "[종합 교육 성취도 피드백]",
+                bodyText: combinedFeedback,
+                memoText: customMemo
             });
 
             const blob = await docx.Packer.toBlob(doc);
-            zip.file(`${studentName}_학습통지서.docx`, blob);
+            let baseFileName = `${studentName}_학습통지서`;
+            let fileName = `${baseFileName}.docx`;
+            if (usedFileNames[baseFileName] !== undefined) {
+                usedFileNames[baseFileName]++;
+                fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
+            } else { usedFileNames[baseFileName] = 1; }
+            zip.file(fileName, blob);
         }
 
-        if(!hasValidFile) {
-            alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!");
+        if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
+
+        zip.generateAsync({type:"blob"}).then(content => {
+            saveAs(content, `${className}_학습통지서_일괄출력.zip`);
+        }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
+    }
+
+    /* =================================================================
+       탭 2: 월간 교육현황 공유 (신규)
+    ================================================================= */
+    let currentLessons2 = []; // [{code, no, name, goal, phrase}]
+    let lastSelectedTextbook2 = "";
+    let rowCounter2 = 0;
+
+    function onTextbookChange2() {
+        const select = document.getElementById("textbookSelect2");
+        const hasLessons = document.querySelectorAll("#lessonListBox input[type=checkbox]").length > 0;
+        const hasStudents = document.querySelectorAll("#studentGrid2 .student-row2").length > 0;
+        if (hasLessons || hasStudents) {
+            const ok = confirm("⚠️ 교재를 변경하면 선택한 차시와 입력된 학생 데이터가 모두 삭제됩니다.\n정말 변경하시겠습니까?");
+            if (!ok) { select.value = lastSelectedTextbook2; return; }
+        }
+        lastSelectedTextbook2 = select.value;
+        loadLessons2();
+    }
+
+    function loadLessons2() {
+        const bookId = document.getElementById("textbookSelect2").value;
+        const box = document.getElementById("lessonListBox");
+        if (!bookId) { box.innerHTML = '<p class="text-muted small mb-0">먼저 교재를 선택해 주세요.</p>'; return; }
+
+        box.innerHTML = '<p class="text-muted small mb-0">차시 목록을 불러오는 중입니다...</p>';
+
+        // ※ 백엔드 Apps Script에 "get_lessons" 액션 추가가 필요합니다.
+        // 반환 형식 예: [헤더행, [교재코드, 차시번호, 차시명, 학습목표, 안내문구], ...]
+        fetch(`${WEB_APP_URL}?action=get_lessons&book_id=${bookId}`)
+        .then(res => res.json())
+        .then(data => {
+            currentLessons2 = [];
+            if (data.error) {
+                alert("차시 목록 조회 오류: " + data.error);
+                return;
+            }
+            // get_lessons는 get_evals와 동일하게 이미 book_id로 필터링된 결과(헤더 없음)를 반환하므로 0번부터 읽습니다.
+            for (let i = 0; i < data.length; i++) {
+                currentLessons2.push({
+                    no: Number(data[i][1]),
+                    name: data[i][2],
+                    goal: data[i][3],
+                    phrase: data[i][4]
+                });
+            }
+            currentLessons2.sort((a, b) => a.no - b.no);
+
+            box.innerHTML = "";
+            currentLessons2.forEach((lesson, idx) => {
+                const div = document.createElement("div");
+                div.className = "lesson-check-item";
+                div.innerHTML = `
+                    <input type="checkbox" class="form-check-input lesson-check" id="lesson_chk_${idx}" onchange="onLessonCheckChange()">
+                    <span class="lesson-name">${lesson.no}차시. ${lesson.name}</span>
+                    <span class="lesson-goal">${lesson.goal}</span>
+                `;
+                box.appendChild(div);
+            });
+
+            document.getElementById("studentGrid2").innerHTML = "";
+            updateClassPreview();
+        })
+        .catch(err => {
+            box.innerHTML = '<p class="text-danger small mb-0">차시 목록 로딩 실패: 네트워크 상태를 확인하고 교재를 다시 선택해 주세요.</p>';
+        });
+    }
+
+    function toggleAllLessons(state) {
+        document.querySelectorAll("#lessonListBox .lesson-check").forEach(chk => chk.checked = state);
+        onLessonCheckChange();
+    }
+
+    function onLessonCheckChange() {
+        updateClassPreview();
+        // 반 공통 내용이 바뀌면 이미 입력된 학생들의 미리보기도 함께 갱신
+        document.querySelectorAll("#studentGrid2 .student-row2").forEach(row => {
+            const rowNum = row.id.split('_')[1];
+            updatePreview2(rowNum);
+        });
+    }
+
+    function getCommonClassText() {
+        const checks = document.querySelectorAll("#lessonListBox .lesson-check");
+        let selectedPhrases = [];
+        checks.forEach((chk, idx) => {
+            if (chk.checked) selectedPhrases.push(currentLessons2[idx].phrase);
+        });
+        if (selectedPhrases.length === 0) return "";
+
+        let text = "이번 달 우리 반은 " + selectedPhrases[0];
+        for (let i = 1; i < selectedPhrases.length; i++) {
+            text += " 또한 " + selectedPhrases[i];
+        }
+        return text;
+    }
+
+    function updateClassPreview() {
+        const previewBox = document.getElementById("classPreviewBox");
+        const text = getCommonClassText();
+        if (!text) {
+            previewBox.textContent = "차시를 선택하면 여기에 반 전체 공통 문장이 표시됩니다.";
+            previewBox.classList.add("empty");
+        } else {
+            previewBox.textContent = text;
+            previewBox.classList.remove("empty");
+        }
+    }
+
+    function addStudentRow2() {
+        const tbody = document.getElementById("studentGrid2");
+        const textbook = document.getElementById("textbookSelect2").value;
+        if (!textbook) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
+
+        rowCounter2++;
+        let tr = document.createElement("tr");
+        tr.className = "student-row2";
+        tr.id = `row2_${rowCounter2}`;
+
+        tr.innerHTML = `
+            <td><input type="text" class="form-control student-name2" placeholder="이름 입력" oninput="updatePreview2(${rowCounter2})"></td>
+            <td><input type="text" class="form-control custom-memo2" placeholder="예: 이번 달 발표를 잘했어요" oninput="updatePreview2(${rowCounter2})"></td>
+            <td><div class="preview-box empty" id="preview2_${rowCounter2}">차시를 선택하면 여기에 문장이 표시됩니다.</div></td>
+            <td class="text-center"><button class="btn btn-danger btn-sm" onclick="document.getElementById('row2_${rowCounter2}').remove()">삭제</button></td>
+        `;
+        tbody.appendChild(tr);
+        updatePreview2(rowCounter2);
+    }
+
+    function updatePreview2(rowNum) {
+        const row = document.getElementById(`row2_${rowNum}`);
+        if (!row) return;
+        const previewBox = document.getElementById(`preview2_${rowNum}`);
+        const studentName = row.querySelector(".student-name2").value.trim() || "(이름 미입력)";
+        const memo = row.querySelector(".custom-memo2").value.trim();
+        const commonText = getCommonClassText();
+
+        if (!commonText) {
+            previewBox.textContent = "차시를 선택하면 여기에 문장이 표시됩니다.";
+            previewBox.classList.add("empty");
             return;
         }
 
-        zip.generateAsync({type:"blob"}).then(function(content) {
-            saveAs(content, `${className}_학습통지서_일괄출력.zip`);
+        let text = `▶ ${studentName}\n${commonText}`;
+        if (memo) text += `\n[개별 의견] ${memo}`;
+        previewBox.textContent = text;
+        previewBox.classList.remove("empty");
+    }
+
+    function buildFeedbackDoc({ title, className, studentName, textbookName, sectionTitle, bodyText, memoText }) {
+        return new docx.Document({
+            sections: [{
+                children: [
+                    new docx.Paragraph({
+                        alignment: docx.AlignmentType.CENTER,
+                        heading: docx.HeadingLevel.HEADING_1,
+                        children: [new docx.TextRun({ text: title, bold: true, size: 32 })]
+                    }),
+                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
+                    new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 수업반 정보 : ${className}`, size: 24 })] }),
+                    new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학생 성명 : ${studentName} 학생 귀하`, size: 24 })] }),
+                    new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학습 과정 : ${textbookName}`, size: 24 })] }),
+                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
+                    new docx.Paragraph({
+                        heading: docx.HeadingLevel.HEADING_2,
+                        children: [new docx.TextRun({ text: sectionTitle, bold: true, size: 26 })]
+                    }),
+                    new docx.Paragraph({ children: [new docx.TextRun({ text: bodyText, size: 22 })] }),
+                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
+                    new docx.Paragraph({ children: [new docx.TextRun({ text: memoText ? `[지도강사 개별 의견]\n- ${memoText}` : "", size: 22 })] }),
+                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
+                    new docx.Paragraph({
+                        alignment: docx.AlignmentType.CENTER,
+                        children: [new docx.TextRun({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", size: 20 })]
+                    }),
+                    new docx.Paragraph({
+                        alignment: docx.AlignmentType.CENTER,
+                        children: [new docx.TextRun({ text: "방과후 컴퓨터 교실 지도강사 드림", size: 20, bold: true })]
+                    })
+                ]
+            }]
+        });
+    }
+
+    async function generateAndZip2() {
+        const className = document.getElementById("className2").value.trim();
+        const textbookSelect = document.getElementById("textbookSelect2");
+        if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
+        const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
+        if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
+
+        const commonText = getCommonClassText();
+        if (!commonText) { alert("이번 달 진행한 차시를 최소 1개 이상 선택해 주세요!"); return; }
+
+        const rows = document.querySelectorAll("#studentGrid2 .student-row2");
+        if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
+
+        const zip = new JSZip();
+        let hasValidFile = false;
+        const usedFileNames = {};
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const studentName = row.querySelector(".student-name2").value.trim();
+            if (!studentName) continue;
+            hasValidFile = true;
+
+            const memo = row.querySelector(".custom-memo2").value.trim();
+
+            const doc = buildFeedbackDoc({
+                title: "📢 월간 교육현황 안내문",
+                className, studentName, textbookName,
+                sectionTitle: "[이번 달 학습 내용]",
+                bodyText: commonText,
+                memoText: memo
+            });
+
+            const blob = await docx.Packer.toBlob(doc);
+            let baseFileName = `${studentName}_월간현황`;
+            let fileName = `${baseFileName}.docx`;
+            if (usedFileNames[baseFileName] !== undefined) {
+                usedFileNames[baseFileName]++;
+                fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
+            } else { usedFileNames[baseFileName] = 1; }
+            zip.file(fileName, blob);
+        }
+
+        if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
+
+        zip.generateAsync({type:"blob"}).then(content => {
+            saveAs(content, `${className}_월간교육현황_일괄출력.zip`);
         }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
     }
 </script>
