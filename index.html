@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>방과후 컴퓨터 교실 피드백 시스템</title>
+    <title>해람북스 교재 평가 통지서 작성</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; }
@@ -16,7 +16,6 @@
         .radio-group.unselected { outline: 2px solid #dc3545; outline-offset: 4px; border-radius: 6px; }
         .btn-primary { background-color: #1e3a8a; border: none; }
         .btn-primary:hover { background-color: #1d4ed8; }
-        .success-box { background-color: #d1e7dd; border: 1px solid #badbcc; padding: 15px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; color: #0f5132; }
         .preview-box {
             background-color: #eff6ff; border: 1px solid #93c5fd; border-radius: 6px;
             padding: 8px 10px; font-size: 0.82rem; color: #1e3a8a;
@@ -38,25 +37,20 @@
 <body>
 
 <div class="container main-container">
-    <h2 class="header-title">🚀 방과후 컴퓨터 교실 피드백 시스템</h2>
-
-    <div class="success-box">
-        <strong>✅ 구글 시트 주소 연동 완료 버전:</strong><br>
-        보내주신 구글 웹앱 주소가 내부에 안전하게 삽입되었습니다. 이제 별도의 코드 수정 없이 이 파일 그대로 사용하시면 됩니다!
-    </div>
+    <h2 class="header-title">🚀 해람북스 교재 평가 통지서 작성</h2>
 
     <ul class="nav nav-tabs" id="mainTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab1-btn" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">📋 월말/분기 평가</button>
+            <button class="nav-link active" id="tab1-btn" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">📋 분기 평가서</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab2-btn" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">📢 월간 교육현황 공유</button>
+            <button class="nav-link" id="tab2-btn" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">📢 학습 진도 안내 양식</button>
         </li>
     </ul>
 
     <div class="tab-content pt-4">
 
-    <!-- ========================= 탭 1: 월말/분기 평가 ========================= -->
+    <!-- ========================= 탭 1: 분기 평가서 ========================= -->
     <div class="tab-pane fade show active" id="tab1" role="tabpanel">
 
         <div class="config-box row g-3">
@@ -97,7 +91,7 @@
         </div>
     </div>
 
-    <!-- ========================= 탭 2: 월간 교육현황 공유 ========================= -->
+    <!-- ========================= 탭 2: 학습 진도 안내 양식 ========================= -->
     <div class="tab-pane fade" id="tab2" role="tabpanel">
 
         <div class="config-box row g-3">
@@ -161,7 +155,7 @@
 
         <div class="text-center mt-5">
             <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip2()">
-                📦 월간 교육현황 안내문 일괄 다운로드 (ZIP)
+                📦 학습 진도 안내 양식 일괄 다운로드 (ZIP)
             </button>
         </div>
     </div>
@@ -170,7 +164,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
@@ -200,7 +194,7 @@
     };
 
     /* =================================================================
-       탭 1: 월말/분기 평가 (기존 로직 + 버그 수정본 그대로 유지)
+       탭 1: 분기 평가서 (기존 로직 + 버그 수정본 그대로 유지)
     ================================================================= */
     let currentEvaluationItems1 = [];
     let evaluationPoolData1 = {};
@@ -313,77 +307,99 @@
         previewBox.style.borderColor = hasUnselected ? "#dc3545" : "#93c5fd";
     }
 
+    function checkLibrariesLoaded() {
+        if (typeof docx === "undefined") {
+            alert("⚠️ 문서 생성 라이브러리(docx.js)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.");
+            return false;
+        }
+        if (typeof JSZip === "undefined") {
+            alert("⚠️ 압축 라이브러리(JSZip)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.");
+            return false;
+        }
+        if (typeof saveAs === "undefined") {
+            alert("⚠️ 다운로드 라이브러리(FileSaver)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.");
+            return false;
+        }
+        return true;
+    }
+
     async function generateAndZip1() {
-        const className = document.getElementById("className1").value.trim();
-        const textbookSelect = document.getElementById("textbookSelect1");
-        if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
-        const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
-        if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
+        if (!checkLibrariesLoaded()) return;
+        try {
+            const className = document.getElementById("className1").value.trim();
+            const textbookSelect = document.getElementById("textbookSelect1");
+            if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
+            const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
+            if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
 
-        const rows = document.querySelectorAll("#studentGrid1 .student-row");
-        if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
+            const rows = document.querySelectorAll("#studentGrid1 .student-row");
+            if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
 
-        let unselectedStudents = [];
-        rows.forEach(row => {
-            const studentName = row.querySelector(".student-name").value.trim();
-            if (!studentName) return;
-            currentEvaluationItems1.forEach((item, idx) => {
-                const checkedRadio = row.querySelector(`input[name="item1_${row.id.split('_')[1]}_${idx}"]:checked`);
-                if (!checkedRadio && !unselectedStudents.includes(studentName)) unselectedStudents.push(studentName);
+            let unselectedStudents = [];
+            rows.forEach(row => {
+                const studentName = row.querySelector(".student-name").value.trim();
+                if (!studentName) return;
+                currentEvaluationItems1.forEach((item, idx) => {
+                    const checkedRadio = row.querySelector(`input[name="item1_${row.id.split('_')[1]}_${idx}"]:checked`);
+                    if (!checkedRadio && !unselectedStudents.includes(studentName)) unselectedStudents.push(studentName);
+                });
             });
-        });
-        if (unselectedStudents.length > 0) {
-            alert("다음 학생의 평가 항목 중 선택되지 않은 항목이 있습니다:\n" + unselectedStudents.join(", ") + "\n빨간 테두리 항목을 모두 선택한 뒤 다시 시도해 주세요.");
-            return;
+            if (unselectedStudents.length > 0) {
+                alert("다음 학생의 평가 항목 중 선택되지 않은 항목이 있습니다:\n" + unselectedStudents.join(", ") + "\n빨간 테두리 항목을 모두 선택한 뒤 다시 시도해 주세요.");
+                return;
+            }
+
+            const zip = new JSZip();
+            let hasValidFile = false;
+            const usedFileNames = {};
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const studentName = row.querySelector(".student-name").value.trim();
+                if (!studentName) continue;
+                hasValidFile = true;
+
+                let combinedFeedback = "";
+                currentEvaluationItems1.forEach((item, idx) => {
+                    const rName = `item1_${row.id.split('_')[1]}_${idx}`;
+                    const checkedRadio = row.querySelector(`input[name="${rName}"]:checked`);
+                    const checkedLevel = checkedRadio ? checkedRadio.value : "상";
+                    const text = (evaluationPoolData1[item] && evaluationPoolData1[item][checkedLevel]) ? evaluationPoolData1[item][checkedLevel] : "";
+                    combinedFeedback += text + " ";
+                });
+                const customMemo = row.querySelector(".custom-memo").value.trim();
+
+                const doc = buildFeedbackDoc({
+                    title: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문",
+                    className, studentName, textbookName,
+                    sectionTitle: "[종합 교육 성취도 피드백]",
+                    bodyText: combinedFeedback,
+                    memoText: customMemo
+                });
+
+                const blob = await docx.Packer.toBlob(doc);
+                let baseFileName = `${studentName}_학습통지서`;
+                let fileName = `${baseFileName}.docx`;
+                if (usedFileNames[baseFileName] !== undefined) {
+                    usedFileNames[baseFileName]++;
+                    fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
+                } else { usedFileNames[baseFileName] = 1; }
+                zip.file(fileName, blob);
+            }
+
+            if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
+
+            zip.generateAsync({type:"blob"}).then(content => {
+                saveAs(content, `${className}_학습통지서_일괄출력.zip`);
+            }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
+        } catch (err) {
+            alert("⚠️ 문서 생성 중 오류가 발생했습니다:\n" + (err && err.message ? err.message : err));
+            console.error(err);
         }
-
-        const zip = new JSZip();
-        let hasValidFile = false;
-        const usedFileNames = {};
-
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const studentName = row.querySelector(".student-name").value.trim();
-            if (!studentName) continue;
-            hasValidFile = true;
-
-            let combinedFeedback = "";
-            currentEvaluationItems1.forEach((item, idx) => {
-                const rName = `item1_${row.id.split('_')[1]}_${idx}`;
-                const checkedRadio = row.querySelector(`input[name="${rName}"]:checked`);
-                const checkedLevel = checkedRadio ? checkedRadio.value : "상";
-                const text = (evaluationPoolData1[item] && evaluationPoolData1[item][checkedLevel]) ? evaluationPoolData1[item][checkedLevel] : "";
-                combinedFeedback += text + " ";
-            });
-            const customMemo = row.querySelector(".custom-memo").value.trim();
-
-            const doc = buildFeedbackDoc({
-                title: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문",
-                className, studentName, textbookName,
-                sectionTitle: "[종합 교육 성취도 피드백]",
-                bodyText: combinedFeedback,
-                memoText: customMemo
-            });
-
-            const blob = await docx.Packer.toBlob(doc);
-            let baseFileName = `${studentName}_학습통지서`;
-            let fileName = `${baseFileName}.docx`;
-            if (usedFileNames[baseFileName] !== undefined) {
-                usedFileNames[baseFileName]++;
-                fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
-            } else { usedFileNames[baseFileName] = 1; }
-            zip.file(fileName, blob);
-        }
-
-        if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
-
-        zip.generateAsync({type:"blob"}).then(content => {
-            saveAs(content, `${className}_학습통지서_일괄출력.zip`);
-        }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
     }
 
     /* =================================================================
-       탭 2: 월간 교육현황 공유 (신규)
+       탭 2: 학습 진도 안내 양식 (신규)
     ================================================================= */
     let currentLessons2 = []; // [{code, no, name, goal, phrase}]
     let lastSelectedTextbook2 = "";
@@ -565,53 +581,59 @@
     }
 
     async function generateAndZip2() {
-        const className = document.getElementById("className2").value.trim();
-        const textbookSelect = document.getElementById("textbookSelect2");
-        if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
-        const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
-        if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
+        if (!checkLibrariesLoaded()) return;
+        try {
+            const className = document.getElementById("className2").value.trim();
+            const textbookSelect = document.getElementById("textbookSelect2");
+            if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
+            const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
+            if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
 
-        const commonText = getCommonClassText();
-        if (!commonText) { alert("이번 달 진행한 차시를 최소 1개 이상 선택해 주세요!"); return; }
+            const commonText = getCommonClassText();
+            if (!commonText) { alert("이번 달 진행한 차시를 최소 1개 이상 선택해 주세요!"); return; }
 
-        const rows = document.querySelectorAll("#studentGrid2 .student-row2");
-        if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
+            const rows = document.querySelectorAll("#studentGrid2 .student-row2");
+            if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
 
-        const zip = new JSZip();
-        let hasValidFile = false;
-        const usedFileNames = {};
+            const zip = new JSZip();
+            let hasValidFile = false;
+            const usedFileNames = {};
 
-        for (let i = 0; i < rows.length; i++) {
-            const row = rows[i];
-            const studentName = row.querySelector(".student-name2").value.trim();
-            if (!studentName) continue;
-            hasValidFile = true;
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const studentName = row.querySelector(".student-name2").value.trim();
+                if (!studentName) continue;
+                hasValidFile = true;
 
-            const memo = row.querySelector(".custom-memo2").value.trim();
+                const memo = row.querySelector(".custom-memo2").value.trim();
 
-            const doc = buildFeedbackDoc({
-                title: "📢 월간 교육현황 안내문",
-                className, studentName, textbookName,
-                sectionTitle: "[이번 달 학습 내용]",
-                bodyText: commonText,
-                memoText: memo
-            });
+                const doc = buildFeedbackDoc({
+                    title: "📢 학습 진도 안내 양식",
+                    className, studentName, textbookName,
+                    sectionTitle: "[이번 달 학습 내용]",
+                    bodyText: commonText,
+                    memoText: memo
+                });
 
-            const blob = await docx.Packer.toBlob(doc);
-            let baseFileName = `${studentName}_월간현황`;
-            let fileName = `${baseFileName}.docx`;
-            if (usedFileNames[baseFileName] !== undefined) {
-                usedFileNames[baseFileName]++;
-                fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
-            } else { usedFileNames[baseFileName] = 1; }
-            zip.file(fileName, blob);
+                const blob = await docx.Packer.toBlob(doc);
+                let baseFileName = `${studentName}_학습진도안내`;
+                let fileName = `${baseFileName}.docx`;
+                if (usedFileNames[baseFileName] !== undefined) {
+                    usedFileNames[baseFileName]++;
+                    fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
+                } else { usedFileNames[baseFileName] = 1; }
+                zip.file(fileName, blob);
+            }
+
+            if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
+
+            zip.generateAsync({type:"blob"}).then(content => {
+                saveAs(content, `${className}_학습진도안내_일괄출력.zip`);
+            }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
+        } catch (err) {
+            alert("⚠️ 문서 생성 중 오류가 발생했습니다:\n" + (err && err.message ? err.message : err));
+            console.error(err);
         }
-
-        if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
-
-        zip.generateAsync({type:"blob"}).then(content => {
-            saveAs(content, `${className}_월간교육현황_일괄출력.zip`);
-        }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
     }
 </script>
 </body>
