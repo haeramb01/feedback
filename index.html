@@ -1,640 +1,823 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>해람북스 교재 평가 통지서 작성</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f8f9fa; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; }
-        .main-container { max-width: 1300px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .header-title { color: #1e3a8a; border-bottom: 3px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 20px; }
-        .config-box { background-color: #eff6ff; padding: 20px; border-radius: 8px; border: 1px solid #bfdbfe; margin-bottom: 25px; }
-        .table th { background-color: #f1f5f9; color: #334155; text-align: center; font-size: 0.9rem; }
-        .table td { vertical-align: middle; }
-        .radio-group { display: flex; gap: 10px; justify-content: center; }
-        .radio-group.unselected { outline: 2px solid #dc3545; outline-offset: 4px; border-radius: 6px; }
-        .btn-primary { background-color: #1e3a8a; border: none; }
-        .btn-primary:hover { background-color: #1d4ed8; }
-        .preview-box {
-            background-color: #eff6ff; border: 1px solid #93c5fd; border-radius: 6px;
-            padding: 8px 10px; font-size: 0.82rem; color: #1e3a8a;
-            min-height: 60px; white-space: pre-wrap; line-height: 1.4;
-        }
-        .preview-box.empty { color: #94a3b8; font-style: italic; }
-        .class-preview-box {
-            background-color: #eff6ff; border: 1px solid #93c5fd; border-radius: 8px;
-            padding: 16px; font-size: 0.95rem; color: #1e3a8a; min-height: 90px;
-            white-space: pre-wrap; line-height: 1.6; margin-bottom: 20px;
-        }
-        .lesson-table th { background-color: #f1f5f9; color: #334155; text-align: center; font-size: 0.88rem; }
-        .lesson-table td { vertical-align: middle; font-size: 0.88rem; }
-        .lesson-table .lesson-goal-cell { color: #64748b; }
-        #lessonListBox { max-height: 340px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; }
-        .nav-tabs .nav-link.active { font-weight: bold; color: #1e3a8a; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>해람북스 교재 평가 통지서 작성</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#EEF1F6; font-family:"Pretendard","Apple SD Gothic Neo",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; color:#1F2937;
+  }
+  .app { max-width:1180px; margin:26px auto; background:#fff; border-radius:16px;
+    box-shadow:0 10px 34px rgba(20,30,60,0.1); overflow:hidden; }
+
+  /* 헤더 */
+  .app-header { display:flex; align-items:center; gap:16px; padding:17px 28px;
+    border-bottom:1px solid #E7EAF0; background:#fff; }
+  .app-header img { height:40px; width:auto; display:block; }
+  .app-header .divider { width:1px; height:32px; background:#E7EAF0; }
+  .app-header .titles { flex:1; }
+  .app-header .titles .t1 { font-size:19px; font-weight:800; color:#1E3A8A; letter-spacing:-0.02em; }
+  .app-header .titles .t2 { font-size:12px; color:#64748B; margin-top:2px; }
+  .help-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; border:1px solid #E2E8F0;
+    background:#fff; border-radius:9px; font-size:13px; font-weight:700; color:#475569; cursor:pointer; }
+
+  /* 탭 pill */
+  .tab-bar { display:flex; gap:10px; padding:13px 28px; background:#F8FAFF; border-bottom:1px solid #E7EAF0; }
+  .tab-pill { display:flex; align-items:center; gap:8px; padding:9px 18px; border-radius:999px;
+    font-size:13.5px; cursor:pointer; transition:.15s; font-weight:700; border:1px solid #E2E8F0;
+    background:#fff; color:#64748B; }
+  .tab-pill.active.pill-red { background:#E23B2E; color:#fff; font-weight:800; border:none;
+    box-shadow:0 4px 12px rgba(226,59,46,.28); }
+  .tab-pill.active.pill-blue { background:#2563EB; color:#fff; font-weight:800; border:none;
+    box-shadow:0 4px 12px rgba(37,99,235,.28); }
+
+  /* 공통 설정 */
+  .config-row { display:flex; gap:16px; align-items:flex-end; padding:18px 28px; background:#fff;
+    border-bottom:1px solid #E7EAF0; flex-wrap:wrap; }
+  .config-field { flex:1; max-width:360px; min-width:220px; }
+  .config-field label { display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px; }
+  .config-field input, .config-field select {
+    width:100%; height:40px; padding:0 13px; background:#fff; border:1px solid #CBD5E1;
+    border-radius:9px; font-size:14px; color:#1F2937; font-weight:600; font-family:inherit;
+  }
+  .config-field select { cursor:pointer; }
+
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* ===== 탭1: 마스터-디테일 ===== */
+  .md-wrap { display:flex; min-height:520px; background:#EEF1F6; }
+
+  .student-list-panel { width:266px; flex:0 0 auto; display:flex; flex-direction:column;
+    background:#F8FAFF; border-right:1px solid #E7EAF0; }
+  .slp-head { padding:16px 14px 12px; }
+  .slp-head .cnt { font-size:13px; font-weight:800; color:#1F2937; margin-bottom:10px; }
+  .slp-head .cnt .done { color:#2563EB; }
+  .slp-head .cnt .total { color:#94A3B8; font-weight:600; }
+  .progress-track { height:8px; border-radius:99px; background:#E7EAF0; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,#2563EB,#4F86F7); }
+  .legend { display:flex; gap:12px; margin-top:8px; font-size:11px; color:#64748B; flex-wrap:wrap; }
+  .legend span { display:flex; align-items:center; gap:4px; }
+  .dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+  .dot.g{background:#16A34A;} .dot.gray{background:#CBD5E1;} .dot.r{background:#E23B2E;}
+
+  .student-items { padding:0 10px 10px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:6px; }
+  .student-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:10px;
+    background:#fff; border:1px solid #E7EAF0; cursor:pointer; }
+  .student-item.active { border:1.5px solid #2563EB; box-shadow:0 4px 12px rgba(37,99,235,.16); }
+  .student-item .avatar { display:inline-flex; width:26px; height:26px; border-radius:8px;
+    background:#DCFCE7; color:#16A34A; font-size:12px; font-weight:800; align-items:center; justify-content:center; flex:0 0 auto; }
+  .student-item.active .avatar { background:#2563EB; color:#fff; }
+  .student-item .nm { flex:1; font-size:13.5px; font-weight:600; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .student-item.active .nm { font-weight:800; color:#1E3A8A; }
+  .student-item .status-ok { display:inline-flex; width:16px; height:16px; border-radius:50%;
+    background:#16A34A; color:#fff; align-items:center; justify-content:center; flex:0 0 auto; }
+  .student-item .status-err { display:inline-flex; width:16px; height:16px; border-radius:50%;
+    background:#E23B2E; color:#fff; align-items:center; justify-content:center; flex:0 0 auto; font-size:10px; font-weight:800; }
+  .student-item .badge-editing { font-size:9.5px; font-weight:800; color:#2563EB; background:#EFF6FF;
+    padding:2px 6px; border-radius:5px; flex:0 0 auto; }
+  .add-student-btn { margin:6px 10px 12px; padding:10px; border-radius:9px; border:1px dashed #CBD5E1;
+    background:#fff; color:#475569; font-size:13px; font-weight:700; cursor:pointer; text-align:center; }
+
+  .detail-panel { flex:1; padding:22px 26px; background:#fff; overflow-y:auto; display:flex; flex-direction:column; gap:16px; }
+  .detail-empty { color:#94A3B8; font-size:14px; text-align:center; margin-top:60px; }
+  .detail-head { display:flex; align-items:center; justify-content:space-between; }
+  .detail-head .name-input { font-size:17px; font-weight:800; color:#1F2937; border:none; border-bottom:1px dashed #CBD5E1;
+    padding:4px 2px; width:220px; font-family:inherit; }
+  .detail-head .name-input::placeholder { color:#CBD5E1; }
+  .detail-head .del-btn { font-size:12px; color:#E23B2E; font-weight:700; cursor:pointer; background:none; border:none; }
+
+  .eval-item label.el { display:block; font-size:13px; font-weight:700; color:#334155; margin-bottom:7px; }
+  .toggle-group { display:flex; gap:7px; }
+  .toggle-btn { flex:1; text-align:center; padding:10px 0; border-radius:9px; font-size:14px; font-weight:700;
+    background:#F8FAFF; border:1px solid #CBD5E1; color:#64748B; cursor:pointer; }
+  .toggle-btn.sel-상 { background:#2563EB; color:#fff; font-weight:800; border:none; }
+  .toggle-btn.sel-중 { background:#F59E0B; color:#fff; font-weight:800; border:none; }
+  .toggle-btn.sel-하 { background:#DC2626; color:#fff; font-weight:800; border:none; }
+
+  .memo-field label.el { display:block; font-size:13px; font-weight:700; color:#334155; margin-bottom:7px; }
+  .memo-field .hint { color:#94A3B8; font-weight:500; }
+  .memo-field input { width:100%; height:42px; padding:0 13px; background:#F8FAFF; border:1px solid #CBD5E1;
+    border-radius:9px; font-size:13.5px; color:#1F2937; font-family:inherit; }
+
+  .preview-panel { width:300px; flex:0 0 auto; padding:20px; background:#F5F9FF; display:flex; flex-direction:column; }
+  .preview-panel .pv-label { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:800; color:#2563EB; margin-bottom:12px; }
+  .preview-panel .pv-box { flex:1; background:#fff; border:1.5px solid #BFDBFE; border-radius:12px; padding:16px;
+    box-shadow:0 4px 14px rgba(37,99,235,.1); font-size:14px; line-height:1.75; color:#1E3A8A; overflow-y:auto; white-space:pre-wrap; }
+  .preview-panel .pv-box .pv-name { font-weight:800; font-size:15px; margin-bottom:8px; color:#1F2937; }
+  .preview-panel .pv-box .pv-memo { margin-top:12px; padding-top:12px; border-top:1px dashed #BFDBFE; color:#334155; }
+  .preview-panel .pv-box .pv-memo b { color:#E23B2E; }
+  .preview-status { margin-top:12px; display:flex; align-items:center; gap:6px; font-size:11.5px; font-weight:700; }
+  .preview-status.ok { color:#16A34A; }
+  .preview-status.bad { color:#E23B2E; }
+
+  .footer-bar { display:flex; align-items:center; gap:14px; padding:16px 28px; background:#fff; border-top:1px solid #E7EAF0; flex-wrap:wrap; }
+  .footer-bar .info { font-size:12.5px; color:#64748B; }
+  .footer-bar .info b { color:#2563EB; }
+  .footer-bar .info b.err { color:#E23B2E; }
+  .zip-btn { margin-left:auto; display:flex; align-items:center; gap:8px; padding:0 26px; height:48px;
+    background:#2563EB; color:#fff; border-radius:11px; font-size:15px; font-weight:800;
+    box-shadow:0 6px 16px rgba(37,99,235,.28); cursor:pointer; border:none; }
+  .zip-btn.red { background:#E23B2E; box-shadow:0 6px 16px rgba(226,59,46,.28); }
+
+  /* ===== 탭2 ===== */
+  .tab2-body { padding:22px 28px; }
+  .section-title { font-size:14px; font-weight:800; color:#1F2937; margin:20px 0 10px; }
+  .section-title:first-child { margin-top:0; }
+  .lesson-toolbar { display:flex; justify-content:flex-end; gap:8px; margin-bottom:10px; }
+  .mini-btn { padding:7px 14px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer;
+    border:1px solid #CBD5E1; background:#fff; color:#475569; }
+  .lesson-list { border:1px solid #E7EAF0; border-radius:12px; overflow:hidden; max-height:340px; overflow-y:auto; }
+  .lesson-row { display:flex; align-items:center; gap:12px; padding:11px 14px; border-bottom:1px solid #F1F4F9; background:#fff; }
+  .lesson-row:last-child { border-bottom:none; }
+  .lesson-row input[type=checkbox] { width:17px; height:17px; accent-color:#2563EB; cursor:pointer; flex:0 0 auto; }
+  .lesson-row .lno { font-size:13px; font-weight:800; color:#2563EB; width:48px; flex:0 0 auto; }
+  .lesson-row .ltitle { flex:1; font-size:13.5px; font-weight:700; color:#1F2937; }
+  .lesson-row .goal-toggle { font-size:11.5px; font-weight:700; color:#64748B; background:#F1F5F9;
+    padding:5px 10px; border-radius:7px; cursor:pointer; border:none; flex:0 0 auto; }
+  .lesson-goal { display:none; padding:0 14px 12px 74px; font-size:12.5px; color:#64748B; background:#FAFBFF; }
+  .lesson-goal.open { display:block; }
+
+  .common-preview { display:flex; gap:10px; align-items:flex-start; background:#EFF6FF; border:1.5px solid #BFDBFE;
+    border-radius:12px; padding:16px; font-size:13.5px; line-height:1.7; color:#1E3A8A; }
+  .common-preview .badge { flex:0 0 auto; font-size:11px; font-weight:800; color:#2563EB; background:#DBEAFE;
+    padding:4px 8px; border-radius:6px; white-space:nowrap; }
+  .common-preview.empty { color:#94A3B8; }
+
+  table.student-table { width:100%; border-collapse:collapse; margin-top:4px; }
+  table.student-table th { background:#F1F5F9; color:#334155; font-size:12.5px; padding:10px; text-align:center; border-bottom:1px solid #E7EAF0; }
+  table.student-table td { padding:8px; border-bottom:1px solid #F1F4F9; vertical-align:middle; font-size:13px; }
+  table.student-table input { width:100%; height:36px; padding:0 10px; border:1px solid #CBD5E1; border-radius:7px; font-size:13px; font-family:inherit; }
+  .del-icon-btn { background:#FEF2F2; color:#E23B2E; border:none; border-radius:7px; padding:7px 10px; cursor:pointer; font-size:12px; font-weight:700; }
+  .add-row-btn { margin-top:10px; padding:9px 16px; border-radius:8px; border:1px dashed #CBD5E1;
+    background:#fff; color:#475569; font-size:13px; font-weight:700; cursor:pointer; }
+  .cell-preview { font-size:12px; color:#475569; line-height:1.5; max-width:320px; }
+  .cell-preview b { color:#1E3A8A; }
+
+  @media (max-width: 900px) {
+    .app { margin:0; border-radius:0; }
+    .md-wrap { flex-direction:column; height:auto; }
+    .student-list-panel { width:100%; }
+    .preview-panel { width:100%; }
+  }
+</style>
 </head>
 <body>
 
-<div class="container main-container">
-    <h2 class="header-title">🚀 해람북스 교재 평가 통지서 작성</h2>
+<div class="app">
 
-    <ul class="nav nav-tabs" id="mainTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab1-btn" data-bs-toggle="tab" data-bs-target="#tab1" type="button" role="tab">📋 분기 평가서</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="tab2-btn" data-bs-toggle="tab" data-bs-target="#tab2" type="button" role="tab">📢 학습 진도 안내 양식</button>
-        </li>
-    </ul>
+  <div class="app-header">
+    <img src="data:image/png;base64,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" alt="해람북스">
+    <div class="divider"></div>
+    <div class="titles">
+      <div class="t1">교재 평가 통지서 작성 도구</div>
+      <div class="t2">구글 시트 문구를 학생별 워드 파일로 클릭 한 번에 일괄 생성합니다</div>
+    </div>
+  </div>
 
-    <div class="tab-content pt-4">
+  <div class="tab-bar">
+    <button class="tab-pill active pill-red" id="tab1-btn" onclick="switchTab(1)">📋 분기 평가서</button>
+    <button class="tab-pill" id="tab2-btn" onclick="switchTab(2)">📢 학습 진도 안내 양식</button>
+  </div>
 
-    <!-- ========================= 탭 1: 분기 평가서 ========================= -->
-    <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+  <!-- ===================== 탭 1 ===================== -->
+  <div class="tab-panel active" id="tab1">
 
-        <div class="config-box row g-3">
-            <div class="col-md-6">
-                <label class="form-label fw-bold text-dark">1. 수업반 이름 입력</label>
-                <input type="text" id="className1" class="form-control" placeholder="예: 대박초등학교 컴퓨터A반">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-bold text-dark">2. 교재 선택</label>
-                <select id="textbookSelect1" class="form-select" onchange="onTextbookChange1()">
-                    <option value="">-- 교재를 로딩 중입니다... --</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <h4 class="fw-bold text-secondary mb-3">3. 학생별 평가 일괄 입력</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle" id="studentTable1">
-                    <thead>
-                        <tr id="tableHeader1">
-                            <th style="width: 12%;">학생 이름</th>
-                            <th style="width: 20%;">강사 커스텀 한줄 의견 (선택)</th>
-                            <th style="width: 22%;">📄 미리보기 (다운로드 전 확인)</th>
-                            <th style="width: 6%;">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentGrid1"></tbody>
-                </table>
-            </div>
-            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="addStudentRow1()">+ 학생 추가하기</button>
-        </div>
-
-        <div class="text-center mt-5">
-            <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip1()">
-                📦 모든 학생 리포트 일괄 다운로드 (ZIP)
-            </button>
-        </div>
+    <div class="config-row">
+      <div class="config-field">
+        <label>1. 수업반 이름</label>
+        <input type="text" id="className1" placeholder="예: 대박초등학교 컴퓨터A반" oninput="renderStudentList1()">
+      </div>
+      <div class="config-field">
+        <label>2. 교재 선택</label>
+        <select id="textbookSelect1" onchange="onTextbookChange1()">
+          <option value="">-- 교재를 로딩 중입니다... --</option>
+        </select>
+      </div>
     </div>
 
-    <!-- ========================= 탭 2: 학습 진도 안내 양식 ========================= -->
-    <div class="tab-pane fade" id="tab2" role="tabpanel">
-
-        <div class="config-box row g-3">
-            <div class="col-md-6">
-                <label class="form-label fw-bold text-dark">1. 수업반 이름 입력</label>
-                <input type="text" id="className2" class="form-control" placeholder="예: 대박초등학교 컴퓨터A반">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label fw-bold text-dark">2. 교재 선택</label>
-                <select id="textbookSelect2" class="form-select" onchange="onTextbookChange2()">
-                    <option value="">-- 교재를 로딩 중입니다... --</option>
-                </select>
-            </div>
+    <div class="md-wrap">
+      <div class="student-list-panel">
+        <div class="slp-head">
+          <div class="cnt">학생 명단 <span class="done" id="doneCount1">0</span><span class="total">/<span id="totalCount1">0</span></span></div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill1" style="width:0%"></div></div>
+          <div class="legend">
+            <span><span class="dot g"></span>완료 <span id="legendDone1">0</span></span>
+            <span><span class="dot gray"></span>미완료 <span id="legendTodo1">0</span></span>
+            <span><span class="dot r"></span>오류 <span id="legendErr1">0</span></span>
+          </div>
         </div>
+        <div class="student-items" id="studentItems1"></div>
+        <button class="add-student-btn" onclick="addStudent1()">+ 학생 추가</button>
+      </div>
 
-        <div class="mb-4">
-            <h4 class="fw-bold text-secondary mb-2">3. 이번 달 진행한 차시 선택</h4>
-            <div class="mb-2">
-                <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleAllLessons(true)">전체 선택</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleAllLessons(false)">전체 해제</button>
-            </div>
-            <div id="lessonListBox">
-                <table class="table table-bordered lesson-table mb-0" id="lessonTable">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%;">선택</th>
-                            <th style="width: 10%;">차시</th>
-                            <th style="width: 25%;">제목</th>
-                            <th style="width: 57%;">학습목표</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lessonTableBody">
-                        <tr><td colspan="4" class="text-muted small">먼저 교재를 선택해 주세요.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+      <div class="detail-panel" id="detailPanel1">
+        <div class="detail-empty">왼쪽에서 학생을 추가하거나 선택해 주세요.</div>
+      </div>
 
-        <div class="mb-4">
-            <h4 class="fw-bold text-secondary mb-2">4. 반 공통 학습내용 미리보기</h4>
-            <div class="class-preview-box empty" id="classPreviewBox">차시를 선택하면 여기에 반 전체 공통 문장이 표시됩니다.</div>
-        </div>
-
-        <div class="mb-4">
-            <h4 class="fw-bold text-secondary mb-3">5. 학생 명단 및 개별 한줄 메모</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered align-middle">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">학생 이름</th>
-                            <th style="width: 30%;">강사 개별 의견 (선택)</th>
-                            <th style="width: 45%;">📄 미리보기</th>
-                            <th style="width: 8%;">관리</th>
-                        </tr>
-                    </thead>
-                    <tbody id="studentGrid2"></tbody>
-                </table>
-            </div>
-            <button type="button" class="btn btn-outline-secondary btn-sm fw-bold" onclick="addStudentRow2()">+ 학생 추가하기</button>
-        </div>
-
-        <div class="text-center mt-5">
-            <button type="button" class="btn btn-primary btn-lg px-5 py-3 fw-bold shadow-sm" onclick="generateAndZip2()">
-                📦 학습 진도 안내 양식 일괄 다운로드 (ZIP)
-            </button>
-        </div>
+      <div class="preview-panel">
+        <div class="pv-label">📄 완성 문장 미리보기</div>
+        <div class="pv-box" id="previewBox1">학생을 선택하면 여기에 완성 문장이 표시됩니다.</div>
+        <div class="preview-status" id="previewStatus1"></div>
+      </div>
     </div>
 
-    </div><!-- /tab-content -->
+    <div class="footer-bar">
+      <span class="info" id="footerInfo1">학생을 추가해 주세요.</span>
+      <button class="zip-btn" onclick="generateAndZip1()">⬇ 전체 리포트 ZIP 다운로드</button>
+    </div>
+  </div>
+
+  <!-- ===================== 탭 2 ===================== -->
+  <div class="tab-panel" id="tab2">
+
+    <div class="config-row">
+      <div class="config-field">
+        <label>1. 수업반 이름</label>
+        <input type="text" id="className2" placeholder="예: 대박초등학교 컴퓨터A반">
+      </div>
+      <div class="config-field">
+        <label>2. 교재 선택</label>
+        <select id="textbookSelect2" onchange="onTextbookChange2()">
+          <option value="">-- 교재를 로딩 중입니다... --</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tab2-body">
+      <div class="section-title">3. 이번 달 진행한 차시 선택</div>
+      <div class="lesson-toolbar">
+        <button class="mini-btn" onclick="toggleAllLessons(true)">전체 선택</button>
+        <button class="mini-btn" onclick="toggleAllLessons(false)">전체 해제</button>
+      </div>
+      <div class="lesson-list" id="lessonList"><div style="padding:14px;color:#94A3B8;font-size:13px;">먼저 교재를 선택해 주세요.</div></div>
+
+      <div class="section-title">4. 반 공통 학습내용 미리보기</div>
+      <div class="common-preview empty" id="classPreviewBox">
+        <span class="badge">공통 문장</span>
+        <span>차시를 선택하면 여기에 반 전체 공통 문장이 표시됩니다.</span>
+      </div>
+
+      <div class="section-title">5. 학생 명단 및 개별 한줄 메모</div>
+      <table class="student-table">
+        <thead>
+          <tr><th style="width:15%;">학생 이름</th><th style="width:25%;">강사 개별 의견 (선택)</th><th>미리보기</th><th style="width:8%;">관리</th></tr>
+        </thead>
+        <tbody id="studentGrid2"></tbody>
+      </table>
+      <button class="add-row-btn" onclick="addStudentRow2()">+ 학생 추가하기</button>
+    </div>
+
+    <div class="footer-bar">
+      <span class="info" id="footerInfo2">차시와 학생을 입력해 주세요.</span>
+      <button class="zip-btn red" onclick="generateAndZip2()">⬇ 학습 진도 안내 양식 ZIP 다운로드</button>
+    </div>
+  </div>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
 <script>
-    // 🔗 구글 웹 앱 URL
-    // ⚠️ 탭2 기능을 쓰려면 백엔드 Apps Script에 "get_lessons" 액션이 추가되어야 합니다. (하단 안내 참고)
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNzBnj0faJtuKJUT-HLIm-TY_3JP-Jk09uv9NOMEHF0AxhQyIh-mIPIrhsi78SPGe8/exec";
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwNzBnj0faJtuKJUT-HLIm-TY_3JP-Jk09uv9NOMEHF0AxhQyIh-mIPIrhsi78SPGe8/exec";
 
-    // 페이지 로드 시 두 탭의 교재 드롭다운을 함께 채웁니다.
-    window.onload = function() {
-        fetch(`${WEB_APP_URL}?action=get_books`)
-        .then(res => res.json())
-        .then(data => {
-            [document.getElementById("textbookSelect1"), document.getElementById("textbookSelect2")].forEach(select => {
-                select.innerHTML = '<option value="">-- 교재를 선택하세요 --</option>';
-                for (let i = 1; i < data.length; i++) {
-                    let useStatus = String(data[i][2]).trim().toUpperCase();
-                    if (useStatus === "Y") {
-                        let option = document.createElement("option");
-                        option.value = data[i][0];
-                        option.text = data[i][1];
-                        select.appendChild(option);
-                    }
-                }
-            });
-        }).catch(err => alert("구글 시트 로드 실패: 앱스 스크립트의 새 배포 승인 및 '모든 사람' 권한 설정을 다시 확인하세요."));
-    };
+  function switchTab(n) {
+    document.getElementById('tab1').classList.toggle('active', n === 1);
+    document.getElementById('tab2').classList.toggle('active', n === 2);
+    document.getElementById('tab1-btn').classList.toggle('active', n === 1);
+    document.getElementById('tab2-btn').classList.toggle('active', n === 2);
+  }
 
-    /* =================================================================
-       탭 1: 분기 평가서 (기존 로직 + 버그 수정본 그대로 유지)
-    ================================================================= */
-    let currentEvaluationItems1 = [];
-    let evaluationPoolData1 = {};
-    let lastSelectedTextbook1 = "";
-    let rowCounter1 = 0;
-
-    function onTextbookChange1() {
-        const select = document.getElementById("textbookSelect1");
-        const hasRows = document.querySelectorAll("#studentGrid1 .student-row").length > 0;
-        if (hasRows) {
-            const ok = confirm("⚠️ 교재를 변경하면 현재 입력된 학생 데이터가 모두 삭제됩니다.\n정말 변경하시겠습니까?");
-            if (!ok) { select.value = lastSelectedTextbook1; return; }
+  window.onload = function() {
+    fetch(`${WEB_APP_URL}?action=get_books`)
+    .then(res => res.json())
+    .then(data => {
+      [document.getElementById("textbookSelect1"), document.getElementById("textbookSelect2")].forEach(select => {
+        select.innerHTML = '<option value="">-- 교재를 선택하세요 --</option>';
+        for (let i = 1; i < data.length; i++) {
+          let useStatus = String(data[i][2]).trim().toUpperCase();
+          if (useStatus === "Y") {
+            let option = document.createElement("option");
+            option.value = data[i][0];
+            option.text = data[i][1];
+            select.appendChild(option);
+          }
         }
-        lastSelectedTextbook1 = select.value;
-        loadEvaluationFields1();
+      });
+    }).catch(err => alert("구글 시트 로드 실패: 앱스 스크립트의 새 배포 승인 및 '모든 사람' 권한 설정을 다시 확인하세요."));
+  };
+
+  function checkLibrariesLoaded() {
+    if (typeof docx === "undefined") { alert("⚠️ 문서 생성 라이브러리(docx.js)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요."); return false; }
+    if (typeof JSZip === "undefined") { alert("⚠️ 압축 라이브러리(JSZip)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요."); return false; }
+    if (typeof saveAs === "undefined") { alert("⚠️ 다운로드 라이브러리(FileSaver)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요."); return false; }
+    return true;
+  }
+
+  function buildFeedbackDoc({ title, className, studentName, textbookName, sectionTitle, bodyText, memoText }) {
+    return new docx.Document({
+      sections: [{
+        children: [
+          new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, heading: docx.HeadingLevel.HEADING_1,
+            children: [new docx.TextRun({ text: title, bold: true, size: 32 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun("")] }),
+          new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 수업반 정보 : ${className}`, size: 24 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학생 성명 : ${studentName} 학생 귀하`, size: 24 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학습 과정 : ${textbookName}`, size: 24 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun("")] }),
+          new docx.Paragraph({ heading: docx.HeadingLevel.HEADING_2,
+            children: [new docx.TextRun({ text: sectionTitle, bold: true, size: 26 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun({ text: bodyText, size: 22 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun("")] }),
+          new docx.Paragraph({ children: [new docx.TextRun({ text: memoText ? `[지도강사 개별 의견]\n- ${memoText}` : "", size: 22 })] }),
+          new docx.Paragraph({ children: [new docx.TextRun("")] }),
+          new docx.Paragraph({ alignment: docx.AlignmentType.CENTER,
+            children: [new docx.TextRun({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", size: 20 })] }),
+          new docx.Paragraph({ alignment: docx.AlignmentType.CENTER,
+            children: [new docx.TextRun({ text: "방과후 컴퓨터 교실 지도강사 드림", size: 20, bold: true })] }),
+        ]
+      }]
+    });
+  }
+
+  /* =========================================================
+     탭 1: 분기 평가서 — 마스터-디테일
+  ========================================================= */
+  let currentEvaluationItems1 = [];
+  let evaluationPoolData1 = {};
+  let lastSelectedTextbook1 = "";
+  let students1 = [];       // {id, name, levels:{item:level}, memo}
+  let selectedStudentId1 = null;
+  let studentSeq1 = 0;
+
+  function onTextbookChange1() {
+    const select = document.getElementById("textbookSelect1");
+    if (students1.length > 0) {
+      const ok = confirm("⚠️ 교재를 변경하면 현재 입력된 학생 데이터가 모두 삭제됩니다.\n정말 변경하시겠습니까?");
+      if (!ok) { select.value = lastSelectedTextbook1; return; }
+    }
+    lastSelectedTextbook1 = select.value;
+    loadEvaluationFields1();
+  }
+
+  function loadEvaluationFields1() {
+    const bookId = document.getElementById("textbookSelect1").value;
+    if (!bookId) return;
+
+    fetch(`${WEB_APP_URL}?action=get_evals&book_id=${bookId}`)
+    .then(res => res.json())
+    .then(data => {
+      currentEvaluationItems1 = [];
+      evaluationPoolData1 = {};
+      data.forEach(row => {
+        const item = row[1], level = row[2], text = row[3];
+        if (!currentEvaluationItems1.includes(item)) currentEvaluationItems1.push(item);
+        if (!evaluationPoolData1[item]) evaluationPoolData1[item] = {};
+        evaluationPoolData1[item][level] = text;
+      });
+      students1 = [];
+      selectedStudentId1 = null;
+      renderStudentList1();
+      renderDetailPanel1();
+    })
+    .catch(err => {
+      alert("평가 항목 로딩 실패: 네트워크 상태를 확인하고 교재를 다시 선택해 주세요.");
+      document.getElementById("textbookSelect1").value = "";
+    });
+  }
+
+  function isStudentComplete1(s) {
+    if (!s.name || !s.name.trim()) return false;
+    return currentEvaluationItems1.every(item => s.levels[item]);
+  }
+  function isStudentTouched1(s) {
+    return (s.name && s.name.trim()) || Object.keys(s.levels).length > 0;
+  }
+
+  function addStudent1() {
+    if (!document.getElementById("textbookSelect1").value) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
+    studentSeq1++;
+    const s = { id: studentSeq1, name: "", levels: {}, memo: "" };
+    students1.push(s);
+    selectedStudentId1 = s.id;
+    renderStudentList1();
+    renderDetailPanel1();
+  }
+
+  function deleteStudent1(id) {
+    students1 = students1.filter(s => s.id !== id);
+    if (selectedStudentId1 === id) selectedStudentId1 = students1.length ? students1[0].id : null;
+    renderStudentList1();
+    renderDetailPanel1();
+  }
+
+  function selectStudent1(id) {
+    selectedStudentId1 = id;
+    renderStudentList1();
+    renderDetailPanel1();
+  }
+
+  function renderStudentList1() {
+    const wrap = document.getElementById("studentItems1");
+    wrap.innerHTML = "";
+    let done = 0, err = 0;
+    students1.forEach(s => {
+      const complete = isStudentComplete1(s);
+      const touched = isStudentTouched1(s);
+      if (complete) done++;
+      else if (touched) err++;
+
+      const div = document.createElement("div");
+      div.className = "student-item" + (s.id === selectedStudentId1 ? " active" : "");
+      div.onclick = () => selectStudent1(s.id);
+      const initial = s.name && s.name.trim() ? s.name.trim()[0] : "?";
+      const displayName = s.name && s.name.trim() ? s.name.trim() : "(이름 미입력)";
+
+      let statusHtml;
+      if (complete) statusHtml = `<span class="status-ok">✓</span>`;
+      else if (s.id === selectedStudentId1) statusHtml = `<span class="badge-editing">입력중</span>`;
+      else if (touched) statusHtml = `<span class="status-err">!</span>`;
+      else statusHtml = "";
+
+      div.innerHTML = `<span class="avatar">${initial}</span><span class="nm">${displayName}</span>${statusHtml}`;
+      wrap.appendChild(div);
+    });
+
+    const total = students1.length;
+    document.getElementById("doneCount1").textContent = done;
+    document.getElementById("totalCount1").textContent = total;
+    document.getElementById("progressFill1").style.width = total ? `${(done/total)*100}%` : "0%";
+    document.getElementById("legendDone1").textContent = done;
+    document.getElementById("legendErr1").textContent = err;
+    document.getElementById("legendTodo1").textContent = Math.max(total - done - err, 0);
+
+    const footer = document.getElementById("footerInfo1");
+    if (total === 0) {
+      footer.innerHTML = "학생을 추가해 주세요.";
+    } else if (err > 0) {
+      footer.innerHTML = `완료 <b>${done}명</b> · 오류 <b class="err">${err}명</b> 남음 — 오류 해결 후 전체 다운로드할 수 있어요`;
+    } else {
+      footer.innerHTML = `완료 <b>${done}명</b> / 전체 ${total}명 — 모든 학생 입력 완료!`;
+    }
+  }
+
+  function renderDetailPanel1() {
+    const panel = document.getElementById("detailPanel1");
+    const s = students1.find(x => x.id === selectedStudentId1);
+    if (!s) {
+      panel.innerHTML = `<div class="detail-empty">왼쪽에서 학생을 추가하거나 선택해 주세요.</div>`;
+      updatePreview1(null);
+      return;
     }
 
-    function loadEvaluationFields1() {
-        const bookId = document.getElementById("textbookSelect1").value;
-        if (!bookId) return;
+    let html = `<div class="detail-head">
+      <input class="name-input" id="detailNameInput" placeholder="학생 이름 입력" value="${s.name || ''}" oninput="onNameInput1(this.value)">
+      <button class="del-btn" onclick="deleteStudent1(${s.id})">삭제</button>
+    </div>`;
 
-        fetch(`${WEB_APP_URL}?action=get_evals&book_id=${bookId}`)
-        .then(res => res.json())
-        .then(data => {
-            currentEvaluationItems1 = [];
-            evaluationPoolData1 = {};
-            data.forEach(row => {
-                const item = row[1], level = row[2], text = row[3];
-                if (!currentEvaluationItems1.includes(item)) currentEvaluationItems1.push(item);
-                if (!evaluationPoolData1[item]) evaluationPoolData1[item] = {};
-                evaluationPoolData1[item][level] = text;
-            });
+    currentEvaluationItems1.forEach(item => {
+      html += `<div class="eval-item">
+        <label class="el">${item}</label>
+        <div class="toggle-group">`;
+      ["상","중","하"].forEach(lv => {
+        const sel = s.levels[item] === lv ? ` sel-${lv}` : "";
+        html += `<div class="toggle-btn${sel}" onclick="setLevel1('${item.replace(/'/g,"\\'")}','${lv}')">${lv}</div>`;
+      });
+      html += `</div></div>`;
+    });
 
-            const header = document.getElementById("tableHeader1");
-            header.innerHTML = '<th style="width: 12%;">학생 이름</th>';
-            currentEvaluationItems1.forEach(item => {
-                let th = document.createElement("th");
-                th.innerText = item;
-                header.appendChild(th);
-            });
-            header.innerHTML += '<th style="width: 20%;">강사 커스텀 한줄 의견 (선택)</th><th style="width: 22%;">📄 미리보기 (다운로드 전 확인)</th><th style="width: 6%;">관리</th>';
+    html += `<div class="memo-field">
+      <label class="el">강사 한줄 의견 <span class="hint">(선택)</span></label>
+      <input type="text" id="detailMemoInput" placeholder="예: 발표 시간에 자신감 있게 설명했어요" value="${s.memo || ''}" oninput="onMemoInput1(this.value)">
+    </div>`;
 
-            document.getElementById("studentGrid1").innerHTML = "";
-            addStudentRow1();
-        })
-        .catch(err => {
-            alert("평가 항목 로딩 실패: 네트워크 상태를 확인하고 교재를 다시 선택해 주세요.");
-            document.getElementById("textbookSelect1").value = "";
-        });
+    panel.innerHTML = html;
+    updatePreview1(s);
+  }
+
+  function onNameInput1(val) {
+    const s = students1.find(x => x.id === selectedStudentId1);
+    if (!s) return;
+    s.name = val;
+    renderStudentList1();
+    updatePreview1(s);
+  }
+  function onMemoInput1(val) {
+    const s = students1.find(x => x.id === selectedStudentId1);
+    if (!s) return;
+    s.memo = val;
+    updatePreview1(s);
+  }
+  function setLevel1(item, level) {
+    const s = students1.find(x => x.id === selectedStudentId1);
+    if (!s) return;
+    s.levels[item] = level;
+    renderDetailPanel1();
+    renderStudentList1();
+  }
+
+  function updatePreview1(s) {
+    const box = document.getElementById("previewBox1");
+    const status = document.getElementById("previewStatus1");
+    if (!s) {
+      box.textContent = "학생을 선택하면 여기에 완성 문장이 표시됩니다.";
+      status.innerHTML = "";
+      return;
     }
+    const name = s.name && s.name.trim() ? s.name.trim() : "(이름 미입력)";
+    let body = "";
+    let missing = [];
+    currentEvaluationItems1.forEach(item => {
+      const lv = s.levels[item];
+      if (!lv) { missing.push(item); return; }
+      const text = (evaluationPoolData1[item] && evaluationPoolData1[item][lv]) ? evaluationPoolData1[item][lv] : "";
+      body += text + " ";
+    });
+    let html = `<div class="pv-name">▶ ${name} 학생</div>${body.trim()}`;
+    if (s.memo && s.memo.trim()) html += `<div class="pv-memo"><b>[개별 의견]</b><br>${s.memo.trim()}</div>`;
+    box.innerHTML = html;
 
-    function addStudentRow1() {
-        const tbody = document.getElementById("studentGrid1");
-        const textbook = document.getElementById("textbookSelect1").value;
-        if (!textbook) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
-
-        rowCounter1++;
-        let tr = document.createElement("tr");
-        tr.className = "student-row";
-        tr.id = `row1_${rowCounter1}`;
-
-        tr.innerHTML += `<td><input type="text" class="form-control student-name" placeholder="이름 입력" oninput="updatePreview1(${rowCounter1})"></td>`;
-
-        currentEvaluationItems1.forEach((item, index) => {
-            tr.innerHTML += `<td>
-                <div class="radio-group" id="radiogroup1_${rowCounter1}_${index}">
-                    <label><input type="radio" name="item1_${rowCounter1}_${index}" value="상" onclick="updatePreview1(${rowCounter1})"> 상</label>
-                    <label><input type="radio" name="item1_${rowCounter1}_${index}" value="중" onclick="updatePreview1(${rowCounter1})"> 중</label>
-                    <label><input type="radio" name="item1_${rowCounter1}_${index}" value="하" onclick="updatePreview1(${rowCounter1})"> 하</label>
-                </div>
-            </td>`;
-        });
-
-        tr.innerHTML += `<td><input type="text" class="form-control custom-memo" placeholder="예: 집중력이 좋음" oninput="updatePreview1(${rowCounter1})"></td>
-        <td><div class="preview-box empty" id="preview1_${rowCounter1}">평가를 선택하면 여기에 문장이 표시됩니다.</div></td>
-        <td class="text-center"><button class="btn btn-danger btn-sm" onclick="document.getElementById('row1_${rowCounter1}').remove()">삭제</button></td>`;
-
-        tbody.appendChild(tr);
+    if (missing.length > 0) {
+      status.className = "preview-status bad";
+      status.innerHTML = `⚠ 미선택 항목: ${missing.join(", ")}`;
+    } else if (!s.name || !s.name.trim()) {
+      status.className = "preview-status bad";
+      status.innerHTML = `⚠ 이름을 입력해 주세요`;
+    } else {
+      status.className = "preview-status ok";
+      status.innerHTML = `✓ 모든 항목 입력 완료 — 다운로드 가능`;
     }
+  }
 
-    function updatePreview1(rowNum) {
-        const row = document.getElementById(`row1_${rowNum}`);
-        if (!row) return;
-        const previewBox = document.getElementById(`preview1_${rowNum}`);
-        const studentName = row.querySelector(".student-name").value.trim() || "(이름 미입력)";
+  async function generateAndZip1() {
+    if (!checkLibrariesLoaded()) return;
+    try {
+      const className = document.getElementById("className1").value.trim();
+      const textbookSelect = document.getElementById("textbookSelect1");
+      if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
+      const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
+      if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
+      if (students1.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
 
+      const validStudents = students1.filter(s => s.name && s.name.trim());
+      if (validStudents.length === 0) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
+
+      const incomplete = validStudents.filter(s => !isStudentComplete1(s)).map(s => s.name.trim());
+      if (incomplete.length > 0) {
+        alert("다음 학생의 평가 항목 중 선택되지 않은 항목이 있습니다:\n" + incomplete.join(", ") + "\n모든 항목을 선택한 뒤 다시 시도해 주세요.");
+        return;
+      }
+
+      const zip = new JSZip();
+      const usedFileNames = {};
+
+      for (const s of validStudents) {
+        const studentName = s.name.trim();
         let combinedFeedback = "";
-        let hasUnselected = false;
-
-        currentEvaluationItems1.forEach((item, idx) => {
-            const rName = `item1_${rowNum}_${idx}`;
-            const checkedRadio = row.querySelector(`input[name="${rName}"]:checked`);
-            const groupBox = document.getElementById(`radiogroup1_${rowNum}_${idx}`);
-            if (!checkedRadio) {
-                hasUnselected = true;
-                if (groupBox) groupBox.classList.add("unselected");
-                combinedFeedback += `[${item}: 미선택] `;
-            } else {
-                if (groupBox) groupBox.classList.remove("unselected");
-                const text = (evaluationPoolData1[item] && evaluationPoolData1[item][checkedRadio.value]) ? evaluationPoolData1[item][checkedRadio.value] : "";
-                combinedFeedback += text + " ";
-            }
+        currentEvaluationItems1.forEach(item => {
+          const lv = s.levels[item];
+          const text = (evaluationPoolData1[item] && evaluationPoolData1[item][lv]) ? evaluationPoolData1[item][lv] : "";
+          combinedFeedback += text + " ";
         });
 
-        const customMemo = row.querySelector(".custom-memo").value.trim();
-        if (customMemo) combinedFeedback += `\n[개별 의견] ${customMemo}`;
-
-        previewBox.textContent = `▶ ${studentName}\n` + combinedFeedback.trim();
-        previewBox.classList.remove("empty");
-        previewBox.style.borderColor = hasUnselected ? "#dc3545" : "#93c5fd";
-    }
-
-    function checkLibrariesLoaded() {
-        if (typeof docx === "undefined") {
-            alert("⚠️ 문서 생성 라이브러리(docx.js)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.");
-            return false;
-        }
-        if (typeof JSZip === "undefined") {
-            alert("⚠️ 압축 라이브러리(JSZip)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.");
-            return false;
-        }
-        if (typeof saveAs === "undefined") {
-            alert("⚠️ 다운로드 라이브러리(FileSaver)가 로드되지 않았습니다.\n인터넷 연결을 확인하고 새로고침 후 다시 시도해 주세요.");
-            return false;
-        }
-        return true;
-    }
-
-    async function generateAndZip1() {
-        if (!checkLibrariesLoaded()) return;
-        try {
-            const className = document.getElementById("className1").value.trim();
-            const textbookSelect = document.getElementById("textbookSelect1");
-            if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
-            const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
-            if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
-
-            const rows = document.querySelectorAll("#studentGrid1 .student-row");
-            if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
-
-            let unselectedStudents = [];
-            rows.forEach(row => {
-                const studentName = row.querySelector(".student-name").value.trim();
-                if (!studentName) return;
-                currentEvaluationItems1.forEach((item, idx) => {
-                    const checkedRadio = row.querySelector(`input[name="item1_${row.id.split('_')[1]}_${idx}"]:checked`);
-                    if (!checkedRadio && !unselectedStudents.includes(studentName)) unselectedStudents.push(studentName);
-                });
-            });
-            if (unselectedStudents.length > 0) {
-                alert("다음 학생의 평가 항목 중 선택되지 않은 항목이 있습니다:\n" + unselectedStudents.join(", ") + "\n빨간 테두리 항목을 모두 선택한 뒤 다시 시도해 주세요.");
-                return;
-            }
-
-            const zip = new JSZip();
-            let hasValidFile = false;
-            const usedFileNames = {};
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const studentName = row.querySelector(".student-name").value.trim();
-                if (!studentName) continue;
-                hasValidFile = true;
-
-                let combinedFeedback = "";
-                currentEvaluationItems1.forEach((item, idx) => {
-                    const rName = `item1_${row.id.split('_')[1]}_${idx}`;
-                    const checkedRadio = row.querySelector(`input[name="${rName}"]:checked`);
-                    const checkedLevel = checkedRadio ? checkedRadio.value : "상";
-                    const text = (evaluationPoolData1[item] && evaluationPoolData1[item][checkedLevel]) ? evaluationPoolData1[item][checkedLevel] : "";
-                    combinedFeedback += text + " ";
-                });
-                const customMemo = row.querySelector(".custom-memo").value.trim();
-
-                const doc = buildFeedbackDoc({
-                    title: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문",
-                    className, studentName, textbookName,
-                    sectionTitle: "[종합 교육 성취도 피드백]",
-                    bodyText: combinedFeedback,
-                    memoText: customMemo
-                });
-
-                const blob = await docx.Packer.toBlob(doc);
-                let baseFileName = `${studentName}_학습통지서`;
-                let fileName = `${baseFileName}.docx`;
-                if (usedFileNames[baseFileName] !== undefined) {
-                    usedFileNames[baseFileName]++;
-                    fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
-                } else { usedFileNames[baseFileName] = 1; }
-                zip.file(fileName, blob);
-            }
-
-            if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
-
-            zip.generateAsync({type:"blob"}).then(content => {
-                saveAs(content, `${className}_학습통지서_일괄출력.zip`);
-            }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
-        } catch (err) {
-            alert("⚠️ 문서 생성 중 오류가 발생했습니다:\n" + (err && err.message ? err.message : err));
-            console.error(err);
-        }
-    }
-
-    /* =================================================================
-       탭 2: 학습 진도 안내 양식 (신규)
-    ================================================================= */
-    let currentLessons2 = []; // [{code, no, name, goal, phrase}]
-    let lastSelectedTextbook2 = "";
-    let rowCounter2 = 0;
-
-    function onTextbookChange2() {
-        const select = document.getElementById("textbookSelect2");
-        const hasLessons = document.querySelectorAll("#lessonListBox input[type=checkbox]").length > 0;
-        const hasStudents = document.querySelectorAll("#studentGrid2 .student-row2").length > 0;
-        if (hasLessons || hasStudents) {
-            const ok = confirm("⚠️ 교재를 변경하면 선택한 차시와 입력된 학생 데이터가 모두 삭제됩니다.\n정말 변경하시겠습니까?");
-            if (!ok) { select.value = lastSelectedTextbook2; return; }
-        }
-        lastSelectedTextbook2 = select.value;
-        loadLessons2();
-    }
-
-    function loadLessons2() {
-        const bookId = document.getElementById("textbookSelect2").value;
-        const tbody = document.getElementById("lessonTableBody");
-        if (!bookId) { tbody.innerHTML = '<tr><td colspan="4" class="text-muted small">먼저 교재를 선택해 주세요.</td></tr>'; return; }
-
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted small">차시 목록을 불러오는 중입니다...</td></tr>';
-
-        // ※ 백엔드 Apps Script에 "get_lessons" 액션이 필요합니다.
-        // 반환 형식: get_evals와 동일하게 book_id로 필터링된 결과(헤더 없음) — [교재코드, 차시번호, 차시명, 학습목표, 안내문구]
-        fetch(`${WEB_APP_URL}?action=get_lessons&book_id=${bookId}`)
-        .then(res => res.json())
-        .then(data => {
-            currentLessons2 = [];
-            if (data.error) {
-                alert("차시 목록 조회 오류: " + data.error);
-                tbody.innerHTML = '<tr><td colspan="4" class="text-danger small">차시 목록을 불러오지 못했습니다.</td></tr>';
-                return;
-            }
-            for (let i = 0; i < data.length; i++) {
-                currentLessons2.push({
-                    no: Number(data[i][1]),
-                    name: data[i][2],
-                    goal: data[i][3],
-                    phrase: data[i][4]
-                });
-            }
-
-            tbody.innerHTML = "";
-            currentLessons2.forEach((lesson, idx) => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td class="text-center"><input type="checkbox" class="form-check-input lesson-check" id="lesson_chk_${idx}" onchange="onLessonCheckChange()"></td>
-                    <td class="text-center fw-bold">${lesson.no}차시</td>
-                    <td class="fw-bold">${lesson.name}</td>
-                    <td class="lesson-goal-cell">${lesson.goal}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById("studentGrid2").innerHTML = "";
-            updateClassPreview();
-        })
-        .catch(err => {
-            tbody.innerHTML = '<tr><td colspan="4" class="text-danger small">차시 목록 로딩 실패: 네트워크 상태를 확인하고 교재를 다시 선택해 주세요.</td></tr>';
+        const doc = buildFeedbackDoc({
+          title: "🚀 방과후 컴퓨터 교실 학습 피드백 안내문",
+          className, studentName, textbookName,
+          sectionTitle: "[종합 교육 성취도 피드백]",
+          bodyText: combinedFeedback,
+          memoText: s.memo ? s.memo.trim() : ""
         });
+
+        const blob = await docx.Packer.toBlob(doc);
+        let baseFileName = `${studentName}_학습통지서`;
+        let fileName = `${baseFileName}.docx`;
+        if (usedFileNames[baseFileName] !== undefined) {
+          usedFileNames[baseFileName]++;
+          fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
+        } else { usedFileNames[baseFileName] = 1; }
+        zip.file(fileName, blob);
+      }
+
+      zip.generateAsync({type:"blob"}).then(content => {
+        saveAs(content, `${className}_학습통지서_일괄출력.zip`);
+      }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
+    } catch (err) {
+      alert("⚠️ 문서 생성 중 오류가 발생했습니다:\n" + (err && err.message ? err.message : err));
+      console.error(err);
     }
+  }
 
-    function toggleAllLessons(state) {
-        document.querySelectorAll("#lessonListBox .lesson-check").forEach(chk => chk.checked = state);
-        onLessonCheckChange();
+  /* =========================================================
+     탭 2: 학습 진도 안내 양식
+  ========================================================= */
+  let currentLessons2 = [];
+  let lastSelectedTextbook2 = "";
+  let rowCounter2 = 0;
+
+  function onTextbookChange2() {
+    const select = document.getElementById("textbookSelect2");
+    const hasLessons = document.querySelectorAll("#lessonList .lesson-check").length > 0;
+    const hasStudents = document.querySelectorAll("#studentGrid2 .student-row2").length > 0;
+    if (hasLessons || hasStudents) {
+      const ok = confirm("⚠️ 교재를 변경하면 선택한 차시와 입력된 학생 데이터가 모두 삭제됩니다.\n정말 변경하시겠습니까?");
+      if (!ok) { select.value = lastSelectedTextbook2; return; }
     }
+    lastSelectedTextbook2 = select.value;
+    loadLessons2();
+  }
 
-    function onLessonCheckChange() {
-        updateClassPreview();
-        // 반 공통 내용이 바뀌면 이미 입력된 학생들의 미리보기도 함께 갱신
-        document.querySelectorAll("#studentGrid2 .student-row2").forEach(row => {
-            const rowNum = row.id.split('_')[1];
-            updatePreview2(rowNum);
-        });
-    }
+  function loadLessons2() {
+    const bookId = document.getElementById("textbookSelect2").value;
+    const box = document.getElementById("lessonList");
+    if (!bookId) { box.innerHTML = '<div style="padding:14px;color:#94A3B8;font-size:13px;">먼저 교재를 선택해 주세요.</div>'; return; }
 
-    function getCommonClassText() {
-        const checks = document.querySelectorAll("#lessonListBox .lesson-check");
-        let selectedPhrases = [];
-        checks.forEach((chk, idx) => {
-            if (chk.checked) selectedPhrases.push(currentLessons2[idx].phrase);
-        });
-        if (selectedPhrases.length === 0) return "";
+    box.innerHTML = '<div style="padding:14px;color:#94A3B8;font-size:13px;">차시 목록을 불러오는 중입니다...</div>';
 
-        let text = "이번 달 우리 반은 " + selectedPhrases[0];
-        for (let i = 1; i < selectedPhrases.length; i++) {
-            text += " 또한 " + selectedPhrases[i];
-        }
-        return text;
-    }
+    fetch(`${WEB_APP_URL}?action=get_lessons&book_id=${bookId}`)
+    .then(res => res.json())
+    .then(data => {
+      currentLessons2 = [];
+      if (data.error) {
+        alert("차시 목록 조회 오류: " + data.error);
+        box.innerHTML = '<div style="padding:14px;color:#E23B2E;font-size:13px;">차시 목록을 불러오지 못했습니다.</div>';
+        return;
+      }
+      for (let i = 0; i < data.length; i++) {
+        currentLessons2.push({ no: Number(data[i][1]), name: data[i][2], goal: data[i][3], phrase: data[i][4] });
+      }
 
-    function updateClassPreview() {
-        const previewBox = document.getElementById("classPreviewBox");
-        const text = getCommonClassText();
-        if (!text) {
-            previewBox.textContent = "차시를 선택하면 여기에 반 전체 공통 문장이 표시됩니다.";
-            previewBox.classList.add("empty");
-        } else {
-            previewBox.textContent = text;
-            previewBox.classList.remove("empty");
-        }
-    }
-
-    function addStudentRow2() {
-        const tbody = document.getElementById("studentGrid2");
-        const textbook = document.getElementById("textbookSelect2").value;
-        if (!textbook) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
-
-        rowCounter2++;
-        let tr = document.createElement("tr");
-        tr.className = "student-row2";
-        tr.id = `row2_${rowCounter2}`;
-
-        tr.innerHTML = `
-            <td><input type="text" class="form-control student-name2" placeholder="이름 입력" oninput="updatePreview2(${rowCounter2})"></td>
-            <td><input type="text" class="form-control custom-memo2" placeholder="예: 이번 달 발표를 잘했어요" oninput="updatePreview2(${rowCounter2})"></td>
-            <td><div class="preview-box empty" id="preview2_${rowCounter2}">차시를 선택하면 여기에 문장이 표시됩니다.</div></td>
-            <td class="text-center"><button class="btn btn-danger btn-sm" onclick="document.getElementById('row2_${rowCounter2}').remove()">삭제</button></td>
+      box.innerHTML = "";
+      currentLessons2.forEach((lesson, idx) => {
+        const row = document.createElement("div");
+        row.className = "lesson-row";
+        row.innerHTML = `
+          <input type="checkbox" class="lesson-check" id="lesson_chk_${idx}" onchange="onLessonCheckChange()">
+          <span class="lno">${lesson.no}차시</span>
+          <span class="ltitle">${lesson.name}</span>
+          <button class="goal-toggle" onclick="toggleGoal(${idx})">학습목표 ▾</button>
         `;
-        tbody.appendChild(tr);
-        updatePreview2(rowCounter2);
-    }
+        box.appendChild(row);
+        const goalDiv = document.createElement("div");
+        goalDiv.className = "lesson-goal";
+        goalDiv.id = `lesson_goal_${idx}`;
+        goalDiv.textContent = lesson.goal;
+        box.appendChild(goalDiv);
+      });
 
-    function updatePreview2(rowNum) {
-        const row = document.getElementById(`row2_${rowNum}`);
-        if (!row) return;
-        const previewBox = document.getElementById(`preview2_${rowNum}`);
-        const studentName = row.querySelector(".student-name2").value.trim() || "(이름 미입력)";
+      document.getElementById("studentGrid2").innerHTML = "";
+      updateClassPreview();
+    })
+    .catch(err => {
+      box.innerHTML = '<div style="padding:14px;color:#E23B2E;font-size:13px;">차시 목록 로딩 실패: 네트워크 상태를 확인하고 교재를 다시 선택해 주세요.</div>';
+    });
+  }
+
+  function toggleGoal(idx) {
+    document.getElementById(`lesson_goal_${idx}`).classList.toggle("open");
+  }
+
+  function toggleAllLessons(state) {
+    document.querySelectorAll("#lessonList .lesson-check").forEach(chk => chk.checked = state);
+    onLessonCheckChange();
+  }
+
+  function updateFooter2() {
+    const lessonCount = document.querySelectorAll("#lessonList .lesson-check:checked").length;
+    const studentCount = document.querySelectorAll("#studentGrid2 .student-row2 .student-name2").length > 0
+      ? Array.from(document.querySelectorAll("#studentGrid2 .student-name2")).filter(i => i.value.trim()).length
+      : 0;
+    const footer = document.getElementById("footerInfo2");
+    if (lessonCount === 0 && studentCount === 0) {
+      footer.innerHTML = "차시와 학생을 입력해 주세요.";
+    } else {
+      footer.innerHTML = `선택 차시 <b>${lessonCount}개</b> · 학생 <b>${studentCount}명</b>`;
+    }
+  }
+
+  function onLessonCheckChange() {
+    updateClassPreview();
+    document.querySelectorAll("#studentGrid2 .student-row2").forEach(row => {
+      const rowNum = row.id.split('_')[1];
+      updatePreview2(rowNum);
+    });
+    updateFooter2();
+  }
+
+  function getCommonClassText() {
+    const checks = document.querySelectorAll("#lessonList .lesson-check");
+    let selectedPhrases = [];
+    checks.forEach((chk, idx) => { if (chk.checked) selectedPhrases.push(currentLessons2[idx].phrase); });
+    if (selectedPhrases.length === 0) return "";
+    let text = "이번 달 우리 반은 " + selectedPhrases[0];
+    for (let i = 1; i < selectedPhrases.length; i++) text += " 또한 " + selectedPhrases[i];
+    return text;
+  }
+
+  function updateClassPreview() {
+    const box = document.getElementById("classPreviewBox");
+    const text = getCommonClassText();
+    if (!text) {
+      box.className = "common-preview empty";
+      box.innerHTML = `<span class="badge">공통 문장</span><span>차시를 선택하면 여기에 반 전체 공통 문장이 표시됩니다.</span>`;
+    } else {
+      box.className = "common-preview";
+      box.innerHTML = `<span class="badge">공통 문장</span><span>${text}</span>`;
+    }
+  }
+
+  function addStudentRow2() {
+    const tbody = document.getElementById("studentGrid2");
+    const textbook = document.getElementById("textbookSelect2").value;
+    if (!textbook) { alert("먼저 위에서 교재를 선택해 주세요!"); return; }
+
+    rowCounter2++;
+    let tr = document.createElement("tr");
+    tr.className = "student-row2";
+    tr.id = `row2_${rowCounter2}`;
+    tr.innerHTML = `
+      <td><input type="text" class="student-name2" placeholder="이름 입력" oninput="updatePreview2(${rowCounter2})"></td>
+      <td><input type="text" class="custom-memo2" placeholder="예: 이번 달 발표를 잘했어요" oninput="updatePreview2(${rowCounter2})"></td>
+      <td><div class="cell-preview" id="preview2_${rowCounter2}">차시를 선택하면 여기에 문장이 표시됩니다.</div></td>
+      <td class="text-center"><button class="del-icon-btn" onclick="document.getElementById('row2_${rowCounter2}').remove(); updateFooter2();">삭제</button></td>
+    `;
+    tbody.appendChild(tr);
+    updatePreview2(rowCounter2);
+    updateFooter2();
+  }
+
+  function updatePreview2(rowNum) {
+    const row = document.getElementById(`row2_${rowNum}`);
+    if (!row) return;
+    const box = document.getElementById(`preview2_${rowNum}`);
+    const studentName = row.querySelector(".student-name2").value.trim() || "(이름 미입력)";
+    const memo = row.querySelector(".custom-memo2").value.trim();
+    const commonText = getCommonClassText();
+    if (!commonText) { box.textContent = "차시를 선택하면 여기에 문장이 표시됩니다."; return; }
+    let html = `<b>▶ ${studentName}</b><br>${commonText}`;
+    if (memo) html += `<br>[개별 의견] ${memo}`;
+    box.innerHTML = html;
+    updateFooter2();
+  }
+
+  async function generateAndZip2() {
+    if (!checkLibrariesLoaded()) return;
+    try {
+      const className = document.getElementById("className2").value.trim();
+      const textbookSelect = document.getElementById("textbookSelect2");
+      if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
+      const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
+      if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
+
+      const commonText = getCommonClassText();
+      if (!commonText) { alert("이번 달 진행한 차시를 최소 1개 이상 선택해 주세요!"); return; }
+
+      const rows = document.querySelectorAll("#studentGrid2 .student-row2");
+      if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
+
+      const zip = new JSZip();
+      let hasValidFile = false;
+      const usedFileNames = {};
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const studentName = row.querySelector(".student-name2").value.trim();
+        if (!studentName) continue;
+        hasValidFile = true;
         const memo = row.querySelector(".custom-memo2").value.trim();
-        const commonText = getCommonClassText();
 
-        if (!commonText) {
-            previewBox.textContent = "차시를 선택하면 여기에 문장이 표시됩니다.";
-            previewBox.classList.add("empty");
-            return;
-        }
-
-        let text = `▶ ${studentName}\n${commonText}`;
-        if (memo) text += `\n[개별 의견] ${memo}`;
-        previewBox.textContent = text;
-        previewBox.classList.remove("empty");
-    }
-
-    function buildFeedbackDoc({ title, className, studentName, textbookName, sectionTitle, bodyText, memoText }) {
-        return new docx.Document({
-            sections: [{
-                children: [
-                    new docx.Paragraph({
-                        alignment: docx.AlignmentType.CENTER,
-                        heading: docx.HeadingLevel.HEADING_1,
-                        children: [new docx.TextRun({ text: title, bold: true, size: 32 })]
-                    }),
-                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                    new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 수업반 정보 : ${className}`, size: 24 })] }),
-                    new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학생 성명 : ${studentName} 학생 귀하`, size: 24 })] }),
-                    new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학습 과정 : ${textbookName}`, size: 24 })] }),
-                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                    new docx.Paragraph({
-                        heading: docx.HeadingLevel.HEADING_2,
-                        children: [new docx.TextRun({ text: sectionTitle, bold: true, size: 26 })]
-                    }),
-                    new docx.Paragraph({ children: [new docx.TextRun({ text: bodyText, size: 22 })] }),
-                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                    new docx.Paragraph({ children: [new docx.TextRun({ text: memoText ? `[지도강사 개별 의견]\n- ${memoText}` : "", size: 22 })] }),
-                    new docx.Paragraph({ children: [new docx.TextRun("")] }),
-                    new docx.Paragraph({
-                        alignment: docx.AlignmentType.CENTER,
-                        children: [new docx.TextRun({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", size: 20 })]
-                    }),
-                    new docx.Paragraph({
-                        alignment: docx.AlignmentType.CENTER,
-                        children: [new docx.TextRun({ text: "방과후 컴퓨터 교실 지도강사 드림", size: 20, bold: true })]
-                    })
-                ]
-            }]
+        const doc = buildFeedbackDoc({
+          title: "📢 학습 진도 안내 양식",
+          className, studentName, textbookName,
+          sectionTitle: "[이번 달 학습 내용]",
+          bodyText: commonText,
+          memoText: memo
         });
+
+        const blob = await docx.Packer.toBlob(doc);
+        let baseFileName = `${studentName}_학습진도안내`;
+        let fileName = `${baseFileName}.docx`;
+        if (usedFileNames[baseFileName] !== undefined) {
+          usedFileNames[baseFileName]++;
+          fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
+        } else { usedFileNames[baseFileName] = 1; }
+        zip.file(fileName, blob);
+      }
+
+      if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
+
+      zip.generateAsync({type:"blob"}).then(content => {
+        saveAs(content, `${className}_학습진도안내_일괄출력.zip`);
+      }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
+    } catch (err) {
+      alert("⚠️ 문서 생성 중 오류가 발생했습니다:\n" + (err && err.message ? err.message : err));
+      console.error(err);
     }
-
-    async function generateAndZip2() {
-        if (!checkLibrariesLoaded()) return;
-        try {
-            const className = document.getElementById("className2").value.trim();
-            const textbookSelect = document.getElementById("textbookSelect2");
-            if (!textbookSelect.value) { alert("교재를 선택해 주세요!"); return; }
-            const textbookName = textbookSelect.options[textbookSelect.selectedIndex].text;
-            if (!className) { alert("1번 '수업반 이름'을 입력해 주세요!"); return; }
-
-            const commonText = getCommonClassText();
-            if (!commonText) { alert("이번 달 진행한 차시를 최소 1개 이상 선택해 주세요!"); return; }
-
-            const rows = document.querySelectorAll("#studentGrid2 .student-row2");
-            if (rows.length === 0) { alert("출력할 학생 데이터가 없습니다."); return; }
-
-            const zip = new JSZip();
-            let hasValidFile = false;
-            const usedFileNames = {};
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const studentName = row.querySelector(".student-name2").value.trim();
-                if (!studentName) continue;
-                hasValidFile = true;
-
-                const memo = row.querySelector(".custom-memo2").value.trim();
-
-                const doc = buildFeedbackDoc({
-                    title: "📢 학습 진도 안내 양식",
-                    className, studentName, textbookName,
-                    sectionTitle: "[이번 달 학습 내용]",
-                    bodyText: commonText,
-                    memoText: memo
-                });
-
-                const blob = await docx.Packer.toBlob(doc);
-                let baseFileName = `${studentName}_학습진도안내`;
-                let fileName = `${baseFileName}.docx`;
-                if (usedFileNames[baseFileName] !== undefined) {
-                    usedFileNames[baseFileName]++;
-                    fileName = `${baseFileName}_${usedFileNames[baseFileName]}.docx`;
-                } else { usedFileNames[baseFileName] = 1; }
-                zip.file(fileName, blob);
-            }
-
-            if (!hasValidFile) { alert("학생 이름을 최소 한 명 이상 입력하셔야 파일이 생성됩니다!"); return; }
-
-            zip.generateAsync({type:"blob"}).then(content => {
-                saveAs(content, `${className}_학습진도안내_일괄출력.zip`);
-            }).catch(err => alert("압축 파일 생성 중 오류 발생: " + err));
-        } catch (err) {
-            alert("⚠️ 문서 생성 중 오류가 발생했습니다:\n" + (err && err.message ? err.message : err));
-            console.error(err);
-        }
-    }
+  }
 </script>
 </body>
 </html>
