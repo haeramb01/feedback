@@ -374,30 +374,33 @@
     return true;
   }
 
-  function buildFeedbackDoc({ title, className, studentName, textbookName, sectionTitle, bodyText, memoText }) {
-    return new docx.Document({
-      sections: [{
-        children: [
-          new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, heading: docx.HeadingLevel.HEADING_1,
-            children: [new docx.TextRun({ text: title, bold: true, size: 32 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun("")] }),
-          new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 수업반 정보 : ${className}`, size: 24 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학생 성명 : ${studentName} 학생 귀하`, size: 24 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학습 과정 : ${textbookName}`, size: 24 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun("")] }),
-          new docx.Paragraph({ heading: docx.HeadingLevel.HEADING_2,
-            children: [new docx.TextRun({ text: sectionTitle, bold: true, size: 26 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun({ text: bodyText, size: 22 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun("")] }),
-          new docx.Paragraph({ children: [new docx.TextRun({ text: memoText ? `[지도강사 개별 의견]\n- ${memoText}` : "", size: 22 })] }),
-          new docx.Paragraph({ children: [new docx.TextRun("")] }),
-          new docx.Paragraph({ alignment: docx.AlignmentType.CENTER,
-            children: [new docx.TextRun({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", size: 20 })] }),
-          new docx.Paragraph({ alignment: docx.AlignmentType.CENTER,
-            children: [new docx.TextRun({ text: "방과후 컴퓨터 교실 지도강사 드림", size: 20, bold: true })] }),
-        ]
-      }]
-    });
+  function buildFeedbackDoc({ title, className, studentName, textbookName, sectionTitle, bodyText, memoText, nextCourseText }) {
+    const children = [
+      new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, heading: docx.HeadingLevel.HEADING_1,
+        children: [new docx.TextRun({ text: title, bold: true, size: 32 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun("")] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 수업반 정보 : ${className}`, size: 24 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학생 성명 : ${studentName} 학생 귀하`, size: 24 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: `▶ 학습 과정 : ${textbookName}`, size: 24 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun("")] }),
+      new docx.Paragraph({ heading: docx.HeadingLevel.HEADING_2,
+        children: [new docx.TextRun({ text: sectionTitle, bold: true, size: 26 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: bodyText, size: 22 })] }),
+      new docx.Paragraph({ children: [new docx.TextRun("")] }),
+      new docx.Paragraph({ children: [new docx.TextRun({ text: memoText ? `[지도강사 개별 의견]\n- ${memoText}` : "", size: 22 })] }),
+    ];
+    if (nextCourseText) {
+      children.push(new docx.Paragraph({ children: [new docx.TextRun("")] }));
+      children.push(new docx.Paragraph({ children: [new docx.TextRun({ text: `[다음 수업 과정 추천]\n- ${nextCourseText}`, size: 22 })] }));
+    }
+    children.push(
+      new docx.Paragraph({ children: [new docx.TextRun("")] }),
+      new docx.Paragraph({ alignment: docx.AlignmentType.CENTER,
+        children: [new docx.TextRun({ text: "정보통신 역량을 갖춘 미래 인재로 성장할 수 있도록 가정에서도 많은 격려 부탁드립니다.", size: 20 })] }),
+      new docx.Paragraph({ alignment: docx.AlignmentType.CENTER,
+        children: [new docx.TextRun({ text: "방과후 컴퓨터 교실 지도강사 드림", size: 20, bold: true })] }),
+    );
+    return new docx.Document({ sections: [{ children }] });
   }
 
   /* =========================================================
@@ -551,6 +554,11 @@
       <input type="text" id="detailMemoInput" placeholder="예: 발표 시간에 자신감 있게 설명했어요" value="${s.memo || ''}" oninput="onMemoInput1(this.value)">
     </div>`;
 
+    html += `<div class="memo-field">
+      <label class="el">다음 수업 과정 추천 <span class="hint">(선택)</span></label>
+      <input type="text" id="detailNextCourseInput" placeholder="예: 표 활용 심화 과정을 추천합니다" value="${s.nextCourse || ''}" oninput="onNextCourseInput1(this.value)">
+    </div>`;
+
     panel.innerHTML = html;
     updatePreview1(s);
   }
@@ -566,6 +574,12 @@
     const s = students1.find(x => x.id === selectedStudentId1);
     if (!s) return;
     s.memo = val;
+    updatePreview1(s);
+  }
+  function onNextCourseInput1(val) {
+    const s = students1.find(x => x.id === selectedStudentId1);
+    if (!s) return;
+    s.nextCourse = val;
     updatePreview1(s);
   }
   function setLevel1(item, level) {
@@ -595,6 +609,7 @@
     });
     let html = `<div class="pv-name">▶ ${name} 학생</div>${body.trim()}`;
     if (s.memo && s.memo.trim()) html += `<div class="pv-memo"><b>[개별 의견]</b><br>${s.memo.trim()}</div>`;
+    if (s.nextCourse && s.nextCourse.trim()) html += `<div class="pv-memo"><b>[다음 수업 추천]</b><br>${s.nextCourse.trim()}</div>`;
     box.innerHTML = html;
 
     if (missing.length > 0) {
@@ -645,7 +660,8 @@
           className, studentName, textbookName,
           sectionTitle: "[종합 교육 성취도 피드백]",
           bodyText: combinedFeedback,
-          memoText: s.memo ? s.memo.trim() : ""
+          memoText: s.memo ? s.memo.trim() : "",
+          nextCourseText: s.nextCourse ? s.nextCourse.trim() : ""
         });
 
         const blob = await docx.Packer.toBlob(doc);
