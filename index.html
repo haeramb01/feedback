@@ -45,6 +45,11 @@
   .modal-body .tip { background:#EFF6FF; border:1px solid #BFDBFE; border-radius:9px; padding:10px 12px;
     font-size:12.5px; color:#1E3A8A; margin-top:14px; }
 
+  .privacy-banner { display:flex; flex-direction:column; gap:4px; padding:13px 28px; background:#FEECEC;
+    border-bottom:1px solid #F8D3D3; color:#B42318; line-height:1.55; }
+  .privacy-banner .pb-title { font-size:15px; font-weight:800; }
+  .privacy-banner .pb-body { font-size:12.5px; }
+
   /* 탭 pill */
   .tab-bar { display:flex; gap:10px; padding:13px 28px; background:#F8FAFF; border-bottom:1px solid #E7EAF0; }
   .tab-pill { display:flex; align-items:center; gap:8px; padding:9px 18px; border-radius:999px;
@@ -197,7 +202,12 @@
       <div class="t1">교재 평가 통지서 작성 도구</div>
       <div class="t2">해당 자료는 작성 시 초안으로만 사용하고 학생 개인에 맞춰 수정하여 사용하시기 바랍니다.</div>
     </div>
-    <button class="help-btn" onclick="openHelp()">❓ 도움말</button>
+    <button class="help-btn" onclick="openManual()">📘 이용 매뉴얼</button>
+  </div>
+
+  <div class="privacy-banner">
+    <span class="pb-title">🔒 개인정보처리방침 안내</span>
+    <span class="pb-body">이 앱은 어떠한 데이터도 외부 서버로 수집/전송하지 않습니다. 학생들의 소중한 개인정보를 보호하기 위해 모든 정보는 사용자의 브라우저(로컬 스토리지)에만 저장됩니다. 안심하고 사용하세요.</span>
   </div>
 
   <div class="tab-bar">
@@ -301,11 +311,11 @@
 
 </div>
 
-<div class="modal-overlay" id="helpModal" onclick="if(event.target===this) closeHelp()">
+<div class="modal-overlay" id="manualModal" onclick="if(event.target===this) closeManual()">
   <div class="modal-box">
     <div class="modal-head">
-      <span class="mh-title">❓ 사용 방법 안내</span>
-      <button class="modal-close" onclick="closeHelp()">✕</button>
+      <span class="mh-title">📘 이용 매뉴얼</span>
+      <button class="modal-close" onclick="closeManual()">✕</button>
     </div>
     <div class="modal-body">
       <h4>📋 분기 평가서 탭</h4>
@@ -344,9 +354,9 @@
     document.getElementById('tab2-btn').classList.toggle('active', n === 2);
   }
 
-  function openHelp() { document.getElementById('helpModal').classList.add('open'); }
-  function closeHelp() { document.getElementById('helpModal').classList.remove('open'); }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
+  function openManual() { document.getElementById('manualModal').classList.add('open'); }
+  function closeManual() { document.getElementById('manualModal').classList.remove('open'); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeManual(); });
 
   window.onload = function() {
     fetch(`${WEB_APP_URL}?action=get_books`)
